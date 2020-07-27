@@ -1,5 +1,6 @@
 .printUI{
-    
+    margin-top: 30px;
+    margin-bottom: 30px;
 }
 
 html{
@@ -14,8 +15,10 @@ body{
 
 #app-container{
     position: relative;
-    height: 100%;
     width: 100%;
+    height: fit-content;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -28,3 +31,16 @@ body{
     flex-direction: row;
     justify-content: center;
 }
+
+#app{
+
+}
+
+.tg  {border-collapse:collapse;border-spacing:0; page-break-inside: avoid; page-break-after: auto;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-0lax{text-align:left;vertical-align:top}
