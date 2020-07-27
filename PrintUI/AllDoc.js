@@ -13,6 +13,7 @@ var app = new Vue({
                     var rst = res.data.result
                     for(var x=0;x<rst.length;x++){
                         rst[x].qr="https://apis.mcsrv.icu/qr?urlEncoded="+btoa("https://apis.mcsrv.icu/viewDocumentByID?docID="+rst[x].docID)
+                        rst[x].dScanned = new Date(rst[x].dScanned*1000)
                     }
                     this.documents=rst
                 })
