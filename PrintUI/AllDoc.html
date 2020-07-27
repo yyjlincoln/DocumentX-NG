@@ -4,16 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Load style -->
-    <link rel="stylesheet" type="text/css" href="PrintUI.css">
+    <link rel="stylesheet" type="text/css" href="AllDoc.css">
 </head>
 
 <body>
     <div id="app-container">
         <div id="app-inner">
             <div id="app" class="v-cloak">
-                <div v-if="!ready">
-                    Loading...
-                </div>
+                <!--  -->
                 <div v-if="ready" v-for="doc in documents" class="printUI">
                     <table class="tg" style="table-layout: fixed; width: 661px">
                         <colgroup>
@@ -60,6 +58,7 @@
                         </tbody>
                     </table>
                 </div>
+                <!--  -->
             </div>
         </div>
     </div>
@@ -68,8 +67,9 @@
 <footer>
     <!-- Load vue -->
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"></script>
     <!-- Load Application -->
-    <script src="PrintUI.js"></script>
+    <script src="AllDoc.js"></script>
 </footer>
 
 </html>

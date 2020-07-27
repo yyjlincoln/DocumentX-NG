@@ -1,10 +1,11 @@
 var app = new Vue({
     el: '#app',
     data: {
-        documents: []
+        documents: [],
+        ready: false
     },
     methods: {
-        loadDocuments: function () {
+        loadDocuments: function (callback) {
             this.documents = [{
                 'name': 'Test Document',
                 'docID':'Document ID',
@@ -13,8 +14,7 @@ var app = new Vue({
                 'dScanned':'2020/07/27',
                 'comments':'',
                 'desc':'There is no description available for this document.',
-                'qr':'https://www.google.com/logos/doodles/2020/jeanne-barets-280th-birthday-6753651837108693-l.png'
-            // }]
+                'qr':'https://mcsrv.icu/qr?urlEncoded='+btoa('https://google.com')
             },{
                 'name': 'Test Document',
                 'docID':'Document ID',
@@ -34,14 +34,18 @@ var app = new Vue({
                 'desc':'There is no description available for this document.',
                 'qr':'https://www.google.com/logos/doodles/2020/jeanne-barets-280th-birthday-6753651837108693-l.png'
             }]
+            if(typeof callback == "function"){
+                callback()
+            }
         },
         invokePrint: function(){
             window.print()
         }
     },
     mounted: function () {
-        this.loadDocuments()
-        window.print()
-        // window.close()
+        this.loadDocuments(()=>{
+            this.ready=true
+            window.print()
+        })
     }
 })
