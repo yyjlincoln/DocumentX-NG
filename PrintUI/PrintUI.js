@@ -14,7 +14,7 @@ var app = new Vue({
                 'dScanned':'2020/07/27',
                 'comments':'',
                 'desc':'There is no description available for this document.',
-                'qr':'https://mcsrv.icu/qr?urlEncoded='+btoa('https://google.com')
+                'qr':'https://apis.mcsrv.icu/qr?urlEncoded='+btoa('https://google.com')
             },{
                 'name': 'Test Document',
                 'docID':'Document ID',
