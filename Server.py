@@ -178,5 +178,5 @@ def GenerateQR(urlEncoded):
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr,mimetype='image/png')
 
-app.run()
+# app.run()
 
