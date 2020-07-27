@@ -25,8 +25,8 @@ app.config['MONGODB_SETTINGS'] = {
 db.init_app(app)
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc', 'docx']
-# FILESTORAGE = '/etc/docx/fs'
-FILESTORAGE = "C:\\Temp\\"
+FILESTORAGE = '/etc/docx/fs'
+# FILESTORAGE = "C:\\Temp\\"
 
 
 def RequestErrorHandler(func, code, missing):
