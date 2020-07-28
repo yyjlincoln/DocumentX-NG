@@ -48,7 +48,10 @@ while True:
             <p>This is an automated email from DocumentX-GmailIntegration.</p>
             '''
             try:
-                server.send_mail(Config['email.reciept'],htmlContent)
+                server.send_mail(Config['email.reciept'],{
+                    'subject':f'File {fileName} has been scanned.',
+                    'content_html':htmlContent
+                })
             except Exception as e:
                 print('Could not send email reciept: '+str(e))
 
