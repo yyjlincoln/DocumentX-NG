@@ -9,7 +9,7 @@ import qrcode
 import base64
 import io
 from flask_cors import CORS
-
+import json
 
 # Initialize app
 app = Flask(__name__)
@@ -163,20 +163,75 @@ def viewDocumentByID(docID, token=''):
         return GeneralErrorHandler(-301, 'Document does not exist')
 
 
+@app.route('/editDocumentByID')
+@GetArgs(RequestErrorHandler)
+def editDocumentByID(docID, properties):
+    doc = core.GetDocByDocID(docID)
+    if not doc:
+        return GeneralErrorHandler(-301, 'Document does not exist')
+    try:
+        properties=json.loads(properties)
+    except:
+        return GeneralErrorHandler(-1, 'properties JSON parse error')        
+
+    if not isinstance(properties, dict):
+        return GeneralErrorHandler(-1, 'properties should be a dictionary.')
+
+    success = []
+    failed = []
+
+    for prop in properties:
+        if prop in doc:
+            setattr(doc,prop,properties[prop])
+            success.append(prop)
+        else:
+            failed.append(prop)
+
+    if 'docID' in properties:
+        try:
+            os.rename(os.path.join(FILESTORAGE, docID), os.path.join(FILESTORAGE, properties['docID']))
+        except:
+            return GeneralErrorHandler(-1, 'Failed to move the file')
+    
+
+    try:
+        doc.save()
+    except:
+        if 'docID' in properties:
+            try:
+                # Rollback
+                os.rename(os.path.join(FILESTORAGE, properties['docID']),os.path.join(FILESTORAGE, docID))
+            except:
+                pass
+
+        return GeneralErrorHandler(-302,'Failed to save to the database.')
+
+    
+    
+    return jsonify({
+        'code':0,
+        'success':success,
+        'failed':failed
+    })
+    
+            
+
+
 @app.route('/secureAccess/<path:path>')
 @GetArgs(RequestErrorHandler)
 def GetFile(auth=None, path=None, docID=None):
-    if core.ValidatePermission(docID,auth):
+    if core.ValidatePermission(docID, auth):
         return send_file(os.path.join(FILESTORAGE, docID))
-    return GeneralErrorHandler(-400,'Access is denied'), 403
+    return GeneralErrorHandler(-400, 'Access is denied'), 403
+
 
 @app.route('/qr')
 @GetArgs(RequestErrorHandler)
 def GenerateQR(urlEncoded):
     imgByteArr = io.BytesIO()
-    qrcode.make(base64.b64decode(urlEncoded.encode()).decode(),border=0).save(imgByteArr, format='PNG')
+    qrcode.make(base64.b64decode(urlEncoded.encode()).decode(),
+                border=0).save(imgByteArr, format='PNG')
     imgByteArr = imgByteArr.getvalue()
-    return Response(imgByteArr,mimetype='image/png')
+    return Response(imgByteArr, mimetype='image/png')
 
-# app.run()
-
+app.run()
