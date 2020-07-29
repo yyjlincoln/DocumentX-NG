@@ -229,8 +229,10 @@ def GetFile(auth=None, path=None, docID=None):
 @GetArgs(RequestErrorHandler)
 def GenerateQR(urlEncoded):
     imgByteArr = io.BytesIO()
-    qrcode.make(base64.b64decode(urlEncoded.encode()).decode(),
-                border=0).save(imgByteArr, format='PNG')
+    try:
+        qrcode.make(base64.b64decode(urlEncoded.encode()).decode(),border=0).save(imgByteArr, format='PNG')
+    except:
+        return Response(b'',mimetype='image/png')
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
 
