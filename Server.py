@@ -10,6 +10,15 @@ import base64
 import io
 from flask_cors import CORS
 import json
+import time
+import secrets
+
+ELEVATED_PERMISSION = {
+    'active': False,
+    'ts': 0,
+    'expires_in': 120,
+    'code': ''
+}
 
 # Initialize app
 app = Flask(__name__)
@@ -163,36 +172,40 @@ def viewDocumentByID(docID, token=''):
         return GeneralErrorHandler(-301, 'Document does not exist')
 
 
-@app.route('/editDocumentByID', methods=['GET','POST'])
+@app.route('/editDocumentByID', methods=['GET', 'POST'])
 @GetArgs(RequestErrorHandler)
-def editDocumentByID(docID, properties):
+def editDocumentByID(docID, properties, elToken=None):
     doc = core.GetDocByDocID(docID)
     if not doc:
         return GeneralErrorHandler(-301, 'Document does not exist')
     try:
-        properties=json.loads(properties)
+        properties = json.loads(properties)
     except:
-        return GeneralErrorHandler(-1, 'properties JSON parse error')        
+        return GeneralErrorHandler(-1, 'properties JSON parse error')
 
     if not isinstance(properties, dict):
         return GeneralErrorHandler(-1, 'properties should be a dictionary.')
+    if 'fileName' in properties:
+        if not ELEVATED_PERMISSION['code'] == elToken and ELEVATED_PERMISSION['active'] == True and ELEVATED_PERMISSION['ts']+ELEVATED_PERMISSION['expires_in'] > time.time():
+            ELEVATED_PERMISSION['active'] = False
+            return GeneralErrorHandler(-1, "field fileName is protected and can not be changed over the API.")
 
     success = []
     failed = []
 
     for prop in properties:
         if prop in doc:
-            setattr(doc,prop,properties[prop])
+            setattr(doc, prop, properties[prop])
             success.append(prop)
         else:
             failed.append(prop)
 
     if 'docID' in properties:
         try:
-            os.rename(os.path.join(FILESTORAGE, docID), os.path.join(FILESTORAGE, properties['docID']))
+            os.rename(os.path.join(FILESTORAGE, docID),
+                      os.path.join(FILESTORAGE, properties['docID']))
         except:
             return GeneralErrorHandler(-1, 'Failed to move the file')
-    
 
     try:
         doc.save()
@@ -200,21 +213,18 @@ def editDocumentByID(docID, properties):
         if 'docID' in properties:
             try:
                 # Rollback
-                os.rename(os.path.join(FILESTORAGE, properties['docID']),os.path.join(FILESTORAGE, docID))
+                os.rename(os.path.join(FILESTORAGE, properties['docID']), os.path.join(
+                    FILESTORAGE, docID))
             except:
                 pass
 
-        return GeneralErrorHandler(-302,'Failed to save to the database.')
+        return GeneralErrorHandler(-302, 'Failed to save to the database.')
 
-    
-    
     return jsonify({
-        'code':0,
-        'success':success,
-        'failed':failed
+        'code': 0,
+        'success': success,
+        'failed': failed
     })
-    
-            
 
 
 @app.route('/secureAccess/<path:path>')
@@ -230,10 +240,25 @@ def GetFile(auth=None, path=None, docID=None):
 def GenerateQR(urlEncoded):
     imgByteArr = io.BytesIO()
     try:
-        qrcode.make(base64.b64decode(urlEncoded.encode()).decode(),border=0).save(imgByteArr, format='PNG')
+        qrcode.make(base64.b64decode(urlEncoded.encode()).decode(),
+                    border=0).save(imgByteArr, format='PNG')
     except:
-        return Response(b'',mimetype='image/png')
+        return Response(b'', mimetype='image/png')
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
+
+
+@app.route('/elevatedPermission')
+def elevatedPermission():
+    ELEVATED_PERMISSION['code'] = secrets.token_urlsafe(10)
+    ELEVATED_PERMISSION['active'] = True
+    ELEVATED_PERMISSION['ts'] = time.time()
+    print(f'''**********
+TOKEN FOR ELEVATED_PERMISSION: {ELEVATED_PERMISSION['token']}
+**********''')
+    return jsonify({
+        'code': 0,
+        'message': 'Elevated permission has been enabled. Check the console output for the password.'
+    })
 
 # app.run()
