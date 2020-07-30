@@ -163,7 +163,7 @@ def viewDocumentByID(docID, token=''):
         return GeneralErrorHandler(-301, 'Document does not exist')
 
 
-@app.route('/editDocumentByID')
+@app.route('/editDocumentByID', methods=['GET','POST'])
 @GetArgs(RequestErrorHandler)
 def editDocumentByID(docID, properties):
     doc = core.GetDocByDocID(docID)
