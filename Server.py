@@ -254,7 +254,7 @@ def elevatedPermission():
     ELEVATED_PERMISSION['active'] = True
     ELEVATED_PERMISSION['ts'] = time.time()
     print(f'''**********
-TOKEN FOR ELEVATED_PERMISSION: {ELEVATED_PERMISSION['token']}
+TOKEN FOR ELEVATED_PERMISSION: {ELEVATED_PERMISSION['code']}
 **********''')
     return jsonify({
         'code': 0,
