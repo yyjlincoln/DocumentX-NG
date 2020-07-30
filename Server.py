@@ -186,7 +186,7 @@ def editDocumentByID(docID, properties, elToken=None):
     if not isinstance(properties, dict):
         return GeneralErrorHandler(-1, 'properties should be a dictionary.')
     if 'fileName' in properties:
-        if not ELEVATED_PERMISSION['code'] == elToken and ELEVATED_PERMISSION['active'] == True and ELEVATED_PERMISSION['ts']+ELEVATED_PERMISSION['expires_in'] > time.time():
+        if not (ELEVATED_PERMISSION['code'] == elToken and ELEVATED_PERMISSION['active'] == True and ELEVATED_PERMISSION['ts']+ELEVATED_PERMISSION['expires_in'] > time.time()):
             ELEVATED_PERMISSION['active'] = False
             return GeneralErrorHandler(-1, "field fileName is protected and can not be changed over the API.")
 
