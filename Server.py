@@ -33,7 +33,7 @@ app.config['MONGODB_SETTINGS'] = {
 }
 db.init_app(app)
 
-ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc', 'docx']
+ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc', 'docx','xls','xlsx','ppt','pptx']
 FILESTORAGE = '/etc/docx/fs'
 # FILESTORAGE = "C:\\Temp\\"
 
