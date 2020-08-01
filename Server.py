@@ -207,6 +207,7 @@ def getDownloadLink(docID):
 
 
 @app.route('/editDocumentByID', methods=['GET', 'POST'])
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def editDocumentByID(docID, properties, elToken=None):
     doc = core.GetDocByDocID(docID)
