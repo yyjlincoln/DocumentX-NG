@@ -282,6 +282,7 @@ def GenerateQR(urlEncoded):
 
 @app.route('/login', methods = ['POST'])
 @authlib.authDec('login')
+@GetArgs(RequestErrorHandler)
 def login(uID):
     return jsonify({
         'code':0,
