@@ -27,7 +27,8 @@ app.config['MONGODB_SETTINGS'] = {
 }
 db.init_app(app)
 
-ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc', 'docx','xls','xlsx','ppt','pptx']
+ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
+                      'docx', 'xls', 'xlsx', 'ppt', 'pptx']
 FILESTORAGE = '/etc/docx/fs'
 # FILESTORAGE = "C:\\Temp\\"
 
@@ -84,6 +85,7 @@ def getDocuments():
         'code': 0,
         'result': r
     })
+
 
 @app.route('/getDocumentByID')
 @GetArgs(RequestErrorHandler)
@@ -155,15 +157,51 @@ def deleteDocumentByID(docID):
 
 
 @app.route('/viewDocumentByID')
-@authlib.authDec()
+@authlib.authDec('document_access')
 @GetArgs(RequestErrorHandler)
-def viewDocumentByID(docID, token=''):
+def viewDocumentByID(docID):
     r = core.GetDocByDocID(docID)
     if r:
         redAddr = r.fileName
-        auth = core.GetAuthCode(docID, token)
+        auth = core.GetAuthCode(docID)
         if auth:
             return redirect('/secureAccess/'+redAddr+'?auth='+auth+'&docID='+docID)
+        return GeneralErrorHandler(-1, 'Could not get auth.')
+    else:
+        return GeneralErrorHandler(-301, 'Document does not exist')
+
+
+@app.route('/getDocumentAccessToken')
+@authlib.authDec('document_access')
+@GetArgs(RequestErrorHandler)
+def getDocumentAccessToken(docID):
+    r = core.GetDocByDocID(docID)
+    if r:
+        auth = core.GetAuthCode(docID)
+        if auth:
+            return jsonify({
+                'code': 0,
+                'auth': auth
+            })
+        return GeneralErrorHandler(-1, 'Could not get auth.')
+    else:
+        return GeneralErrorHandler(-301, 'Document does not exist')
+
+
+@app.route('/getDownloadLink')
+@authlib.authDec('document_access')
+@GetArgs(RequestErrorHandler)
+def getDownloadLink(docID):
+    r = core.GetDocByDocID(docID)
+    if r:
+        redAddr = r.fileName
+        auth = core.GetAuthCode(docID)
+        if auth:
+            return jsonify({
+                'code': 0,
+                'link': '/secureAccess/'+redAddr+'?auth='+auth+'&docID='+docID
+            })
+        return GeneralErrorHandler(-1, 'Could not get auth.')
     else:
         return GeneralErrorHandler(-301, 'Document does not exist')
 

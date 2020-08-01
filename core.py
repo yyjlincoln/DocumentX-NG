@@ -49,15 +49,23 @@ def DeleteDocs(docID):
 def GetDocuments():
     return Document.objects()
 
-def GetAuthCode(docID, token):
+def GetAuthCode(docID):
     tok = secrets.token_urlsafe()
-    Auths[docID] = tok
+    if docID in Auths:
+        Auths[docID][tok] = {
+            'created':time.time()
+        }
+    else:
+        Auths[docID] = {}
+        Auths[docID][tok] = {
+            'created':time.time()
+        }
     return tok
 
 def ValidatePermission(docID, auth):
     if docID in Auths:
-        if Auths[docID]==auth:
-            Auths.pop(docID)
+        if auth in Auths[docID]:
+            Auths[docID].pop(auth)
             return True
     return False
         

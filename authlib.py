@@ -113,5 +113,6 @@ def _test_single_token(uID, token):
     # pass
 
 levels = {
-    'password_only': [_test_single_token]
+    'password_only': [_test_single_token],
+    'document_access': [_test_allow]
 }
