@@ -53,6 +53,7 @@ def allowedFile(filename):
 
 
 @app.route('/uploadDocument', methods=['POST'])
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def uploadDocument(name, subject, comments='', desc='', status='Recorded', docID=None):
     if 'file' not in request.files:
@@ -142,7 +143,7 @@ def searchDocumentsByName(name):
 
 
 @app.route('/deleteDocumentByID')
-@authlib.auth()
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def deleteDocumentByID(docID):
     if os.path.exists(os.path.join(FILESTORAGE, docID)) and os.path.isfile(os.path.join(FILESTORAGE, docID)):
@@ -154,6 +155,7 @@ def deleteDocumentByID(docID):
 
 
 @app.route('/viewDocumentByID')
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def viewDocumentByID(docID, token=''):
     r = core.GetDocByDocID(docID)
@@ -238,6 +240,3 @@ def GenerateQR(urlEncoded):
         return Response(b'', mimetype='image/png')
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
-
-
-# app.run()
