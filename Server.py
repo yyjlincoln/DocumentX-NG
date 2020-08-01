@@ -286,7 +286,7 @@ def login(uID):
     return jsonify({
         'code':0,
         'uID':uID,
-        'name':core.GetUsernameByUID(uID)
+        'name':core.GetUsernameByUID(uID),
         'token':core.GetToken(uID),
         'message':'Successfully logged in.'
     })
