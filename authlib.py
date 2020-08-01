@@ -113,7 +113,7 @@ def _test_single_token(uID, token):
     # pass
 
 levels = {
-    'document_access': [_test_allow]
+    'document_access': [_test_allow],
     'verify_token': [_test_single_token],
     'login':[_password]
 }
