@@ -63,7 +63,7 @@ def auth(level='verify_token', **kw):
 
     return ReturnHandler(0, 'Authentication was successful.')
 
-def authDec(level='password_only', **kw):
+def authDec(level='verify_token', **kw):
     if level not in levels:
         raise Exception('Authentication method is not defined')
 
