@@ -12,13 +12,7 @@ from flask_cors import CORS
 import json
 import time
 import secrets
-
-ELEVATED_PERMISSION = {
-    'active': False,
-    'ts': 0,
-    'expires_in': 120,
-    'code': ''
-}
+import authlib
 
 # Initialize app
 app = Flask(__name__)
@@ -90,7 +84,6 @@ def getDocuments():
         'result': r
     })
 
-
 @app.route('/getDocumentByID')
 @GetArgs(RequestErrorHandler)
 def getDocumentByDocumentID(docID):
@@ -149,6 +142,7 @@ def searchDocumentsByName(name):
 
 
 @app.route('/deleteDocumentByID')
+@authlib.auth()
 @GetArgs(RequestErrorHandler)
 def deleteDocumentByID(docID):
     if os.path.exists(os.path.join(FILESTORAGE, docID)) and os.path.isfile(os.path.join(FILESTORAGE, docID)):
@@ -186,9 +180,7 @@ def editDocumentByID(docID, properties, elToken=None):
     if not isinstance(properties, dict):
         return GeneralErrorHandler(-1, 'properties should be a dictionary.')
     if 'fileName' in properties:
-        if not (ELEVATED_PERMISSION['code'] == elToken and ELEVATED_PERMISSION['active'] == True and ELEVATED_PERMISSION['ts']+ELEVATED_PERMISSION['expires_in'] > time.time()):
-            ELEVATED_PERMISSION['active'] = False
-            return GeneralErrorHandler(-1, "field fileName is protected and can not be changed over the API.")
+        return GeneralErrorHandler(-1, "field fileName is protected and can not be changed over the API.")
 
     success = []
     failed = []
@@ -247,18 +239,5 @@ def GenerateQR(urlEncoded):
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
 
-
-@app.route('/elevatedPermission')
-def elevatedPermission():
-    ELEVATED_PERMISSION['code'] = secrets.token_urlsafe(10)
-    ELEVATED_PERMISSION['active'] = True
-    ELEVATED_PERMISSION['ts'] = time.time()
-    print(f'''**********
-TOKEN FOR ELEVATED_PERMISSION: {ELEVATED_PERMISSION['code']}
-**********''')
-    return jsonify({
-        'code': 0,
-        'message': 'Elevated permission has been enabled. Check the console output for the password.'
-    })
 
 # app.run()

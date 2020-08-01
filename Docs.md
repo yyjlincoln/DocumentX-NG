@@ -8,3 +8,5 @@
 | -301       | Document does not exist           |
 | -302       | Failed to save to the database    |
 | -400       | Permission Error                  |
+| -401 | User not exist |
+| -402 | Authentication could not be completed because argument x does not exist |

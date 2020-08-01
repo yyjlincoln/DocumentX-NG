@@ -1,7 +1,7 @@
 import mongoengine as me
 
 
-class User(me.EmbeddedDocument):
+class User(me.Document):
     name = me.StringField(required=True)
     uID = me.StringField(required=True, unique=True)
     role = me.StringField(default='User')
