@@ -11,6 +11,10 @@ def GetToken(uID):
     # [TODO]
     return 'test'
 
+def GetUsernameByUID(uID):
+    # [TODO]
+    return 'Test account'
+
 def NewDocument(name, subject, fileName, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
         return -300, docID

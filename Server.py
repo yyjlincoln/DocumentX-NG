@@ -285,7 +285,8 @@ def GenerateQR(urlEncoded):
 def login(uID):
     return jsonify({
         'code':0,
-        'uID':uID
+        'uID':uID,
+        'name':core.GetUsernameByUID(uID)
         'token':core.GetToken(uID),
         'message':'Successfully logged in.'
     })
