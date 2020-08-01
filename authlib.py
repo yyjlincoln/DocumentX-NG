@@ -17,7 +17,7 @@ def ReturnHandler(code, message, as_decorator=False, **kw):
         return r
 
 
-def _password(uID, hash):
+def _password(uID, password):
 
     # To be done
 
@@ -114,5 +114,6 @@ def _test_single_token(uID, token):
 
 levels = {
     'document_access': [_test_allow]
-    'verify_token': [_test_single_token]
+    'verify_token': [_test_single_token],
+    'login':[_password]
 }
