@@ -280,7 +280,7 @@ def GenerateQR(urlEncoded):
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
 
-@app.route('/login')
+@app.route('/login', methods = ['POST'])
 @authlib.authDec('login')
 def login(uID):
     return jsonify({
