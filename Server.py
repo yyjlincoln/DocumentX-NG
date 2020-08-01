@@ -283,4 +283,9 @@ def GenerateQR(urlEncoded):
 @app.route('/login')
 @authlib.authDec('login')
 def login(uID):
-    return core.GetToken(uID)
+    return jsonify({
+        'code':0,
+        'uID':uID
+        'token':core.GetToken(uID),
+        'message':'Successfully logged in.'
+    })
