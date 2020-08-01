@@ -279,3 +279,8 @@ def GenerateQR(urlEncoded):
         return Response(b'', mimetype='image/png')
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
+
+@app.route('/login')
+@authlib.authDec('login')
+def login(uID):
+    return core.GetToken(uID)

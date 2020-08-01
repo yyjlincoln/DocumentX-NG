@@ -28,7 +28,7 @@ def _password(uID, hash):
     }
 
 
-def auth(level='password_only', **kw):
+def auth(level='verify_token', **kw):
     # Map the level to the corresponding verifying method
     if level not in levels:
         raise Exception('Authentication method is not defined')
@@ -113,6 +113,6 @@ def _test_single_token(uID, token):
     # pass
 
 levels = {
-    'password_only': [_test_single_token],
     'document_access': [_test_allow]
+    'verify_token': [_test_single_token]
 }

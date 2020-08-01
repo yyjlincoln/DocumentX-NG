@@ -7,6 +7,10 @@ import secrets
 
 Auths = {}
 
+def GetToken(uID):
+    # [TODO]
+    return 'test'
+
 def NewDocument(name, subject, fileName, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
         return -300, docID
