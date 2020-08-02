@@ -56,7 +56,8 @@ while True:
             r = requests.post('https://apis.mcsrv.icu/uploadDocument', data={
                 'name': subject,
                 'subject': 'Unspecified',
-                'comments': 'This record is automatically created by DocumentX Gmail Integration.'
+                'comments': 'This record is automatically created by DocumentX Gmail Integration.',
+                'token':token
             }, files={
                 'file': fStream
             }) 
