@@ -1,3 +1,4 @@
+import getpass
 import zmail
 import time
 import requests
@@ -7,39 +8,40 @@ from config import Config
 import base64
 import hashlib
 
-server = zmail.server(Config['email.email'],Config['email.password'])
+server = zmail.server(Config['email.email'], Config['email.password'])
 
 # server.get_mails()
 token = ''
 
-import getpass
 print('Now logging in to DocumentX.')
 print('How do you want to login?')
-mode = input('via Token [t] / PasswordHash [h] / Password [p][default]:').lower()
+mode = input(
+    'via Token [t] / PasswordHash [h] / Password [p][default]:').lower()
 uID = input('Please input your uID:')
-if mode=='t':
+if mode == 't':
     token = getpass.getpass('Enter token:')
 else:
     pHash = ''
-    if mode=='h':
+    if mode == 'h':
         pHash = getpass.getpass('Enter password hash (md5):')
     else:
         # Failover
-        pHash = hashlib.md5(getpass.getpass('Enter password:').encode()).hexdigest()
+        pHash = hashlib.md5(getpass.getpass(
+            'Enter password:').encode()).hexdigest()
     # Now make a login request
     try:
-        r = requests.post('https://apis.mcsrv.icu/login',{
-            'uID':uID,
-            'password':pHash
+        r = requests.post('https://apis.mcsrv.icu/login', {
+            'uID': uID,
+            'password': pHash
         }).json()
-        if r['code']==0:
+        if r['code'] == 0:
             token = r['token']
         else:
-            print('Unable to authenticate with the server: ',r)
+            print('Unable to authenticate with the server: ', r)
             exit()
     except Exception as e:
-        print('Unable to authentiacte with the server due to an Python internal error:',e)
-        exit()    
+        print('Unable to authentiacte with the server due to an Python internal error:', e)
+        exit()
 
 print('Started.')
 
@@ -51,16 +53,17 @@ while True:
             subject = d['subject']
             # Create a Stream
             fStream = io.BytesIO(fData)
-            fStream.name=fileName
+            fStream.name = fileName
             # POST to the server
             r = requests.post('https://apis.mcsrv.icu/uploadDocument', data={
                 'name': subject,
                 'subject': 'Unspecified',
                 'comments': 'This record is automatically created by DocumentX Gmail Integration.',
-                'token':token
+                'token': token,
+                'uID': uID
             }, files={
                 'file': fStream
-            }) 
+            })
 
             # status = 'Failed'
             # DocID = 'unknown'
@@ -70,7 +73,7 @@ while True:
             #     DocID = r['docID']
             # except Exception as e:
             #     status = 'Failed ('+ str(e) + ')'
-            
+
             # htmlContent = f'''
             # <p><b>File {fileName} has been scanned.</b></p>
             # <p>{status}</p>
