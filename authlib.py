@@ -63,6 +63,7 @@ def auth(level='verify_token', **kw):
 
     return ReturnHandler(0, 'Authentication was successful.')
 
+
 def authDec(level='verify_token', **kw):
     if level not in levels:
         raise Exception('Authentication method is not defined')
@@ -100,20 +101,42 @@ def _test_allow():
         'message': '(_test_allow)'
     }
 
+
 def _test_single_token(uID, token):
-    if token=='test':
+    if token == 'test':
         return {
-            'code':0,
-            'message':'test_token'
+            'code': 0,
+            'message': 'test_token'
         }
     return {
-        'code':-400,
-        'message':'Invalid token (testing)'
+        'code': -400,
+        'message': 'Invalid token (testing)'
     }
     # pass
 
+
+def download_ua_check():
+    ua = request.headers.get('User-Agent')
+    UA_NOT_COMPATIBLE = {'MicroMessenger/': {
+        'code': -501,
+        'message': '请在浏览器中打开本页面。'
+    }, 'QQ/': {
+        'code': -502,
+        'message': '请在浏览器中打开本页面。'
+    }}
+
+    if ua:
+        for x in UA_NOT_COMPATIBLE:
+            if x in ua:
+                return ua[x]
+    return {
+        'code': 0,
+        'message': 'UA Check OK'
+    }
+
+
 levels = {
-    'document_access': [_test_allow],
+    'document_access': [_test_allow, download_ua_check],
     'verify_token': [_test_single_token],
-    'login':[_password]
+    'login': [_password]
 }
