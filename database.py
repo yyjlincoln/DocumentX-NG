@@ -12,7 +12,7 @@ class User(me.Document):
     role = me.StringField(default='User')
     dRegistered = me.FloatField(required=True)
     password = me.StringField(required=True)
-    currentTokens = me.EmbeddedDocumentListField(Token, default=[]])
+    currentTokens = me.EmbeddedDocumentListField(Token, default=[])
 
 
 class Permissions(me.EmbeddedDocument):
