@@ -1,7 +1,7 @@
 import mongoengine as me
 
 
-class Token():
+class Token(me.EmbeddedDocument):
     created = me.FloatField()
     expires = me.FloatField()
     token = me.StringField()
