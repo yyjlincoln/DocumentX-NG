@@ -1,11 +1,18 @@
 import mongoengine as me
 
 
+class Token():
+    created = me.FloatField()
+    expires = me.FloatField()
+    token = me.StringField()
+
 class User(me.Document):
     name = me.StringField(required=True)
     uID = me.StringField(required=True, unique=True)
     role = me.StringField(default='User')
     dRegistered = me.FloatField(required=True)
+    password = me.StringField(required=True)
+    currentTokens = me.EmbeddedDocumentListField(Token, default=Token())
 
 
 class Permissions(me.EmbeddedDocument):

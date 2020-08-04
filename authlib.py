@@ -3,6 +3,7 @@ from flask import request, jsonify
 import inspect
 from functools import wraps
 
+# TODO Token management & Complete User Auth
 
 def ReturnHandler(code, message, as_decorator=False, **kw):
     r = {
@@ -18,9 +19,7 @@ def ReturnHandler(code, message, as_decorator=False, **kw):
 
 
 def _password(uID, password):
-
     # To be done
-
     return {
         'code': 0,
         'uid': uID,

@@ -1,4 +1,4 @@
-from database import Document, me
+from database import Document, me, User
 import time
 import random
 import hashlib
@@ -7,13 +7,16 @@ import secrets
 
 Auths = {}
 
+
 def GetToken(uID):
     # [TODO]
     return 'test'
 
+
 def GetUsernameByUID(uID):
     # [TODO]
     return 'Test account'
+
 
 def NewDocument(name, subject, fileName, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
@@ -51,24 +54,54 @@ def DeleteDocs(docID):
     if not d:
         return False
     r = d.delete()
-    return True if r==None else r
+    return True if r == None else r
+
+
+def GetUserByID(uID):
+    u = User.objects(uID=uID).first()
+    if u:
+        return u
+    return None
+
+
+def NewUser(uID, name, password):
+    # Check if uID is unique
+    if GetUserByID(uID):
+        return {
+            'code': -403,
+            'message': 'User already exists'
+        }
+    try:
+        u = User(uID=uID, name=name, password=password, dRegistered = time.time())
+        u.save()
+        return {
+            'code': 0,
+            'message': 'Successfully registered.'
+        }
+    except:
+        return {
+            'code': -1,
+            'message': 'Failed to register.'
+        }
 
 
 def GetDocuments():
     return Document.objects()
 
+
 def GetAuthCode(docID):
     tok = secrets.token_urlsafe()
     if docID in Auths:
         Auths[docID][tok] = {
-            'created':time.time()
+            'created': time.time()
         }
     else:
         Auths[docID] = {}
         Auths[docID][tok] = {
-            'created':time.time()
+            'created': time.time()
         }
     return tok
+
 
 def ValidatePermission(docID, auth):
     if docID in Auths:
@@ -76,4 +109,3 @@ def ValidatePermission(docID, auth):
             Auths[docID].pop(auth)
             return True
     return False
-        

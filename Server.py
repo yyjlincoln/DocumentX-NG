@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, redirect, send_file, Response
 from utils import GetArgs
 from flask_mongoengine import MongoEngine
-from database import Document
+from database import Document, User
 import core
 from werkzeug.utils import secure_filename
 import os
@@ -155,21 +155,7 @@ def deleteDocumentByID(docID):
         'result': core.DeleteDocs(docID)
     })
 
-
-# @app.route('/viewDocumentByID')
-# @authlib.authDec('document_access')
-# @GetArgs(RequestErrorHandler)
-# def viewDocumentByID(docID):
-#     r = core.GetDocByDocID(docID)
-#     if r:
-#         redAddr = r.fileName
-#         auth = core.GetAuthCode(docID)
-#         if auth:
-#             return redirect('/secureAccess/'+redAddr+'?auth='+auth+'&docID='+docID)
-#         return GeneralErrorHandler(-1, 'Could not get auth.')
-#     else:
-#         return GeneralErrorHandler(-301, 'Document does not exist')
-
+# The authentication has been removed since this function has been depriciated.
 @app.route('/viewDocumentByID')
 @GetArgs(RequestErrorHandler)
 def viewDocumentByID(docID):
@@ -285,14 +271,23 @@ def GenerateQR(urlEncoded):
     imgByteArr = imgByteArr.getvalue()
     return Response(imgByteArr, mimetype='image/png')
 
-@app.route('/login', methods = ['POST'])
+
+@app.route('/login', methods=['POST'])
 @authlib.authDec('login')
 @GetArgs(RequestErrorHandler)
 def login(uID):
     return jsonify({
-        'code':0,
-        'uID':uID,
-        'name':core.GetUsernameByUID(uID),
-        'token':core.GetToken(uID),
-        'message':'Successfully logged in.'
+        'code': 0,
+        'uID': uID,
+        'name': core.GetUsernameByUID(uID),
+        'token': core.GetToken(uID),
+        'message': 'Successfully logged in.'
     })
+
+
+@app.route('/register', methods=['POST'])
+@GetArgs(RequestErrorHandler)
+def register(uID, name, password):
+    return jsonify(core.NewUser(uID, name, password))
+
+app.run()
