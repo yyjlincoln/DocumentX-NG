@@ -128,7 +128,7 @@ def download_ua_check():
     if ua:
         for x in UA_NOT_COMPATIBLE:
             if x in ua:
-                return ua[x]
+                return UA_NOT_COMPATIBLE[x]
     return {
         'code': 0,
         'message': 'UA Check OK'
