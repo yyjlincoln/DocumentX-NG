@@ -6,7 +6,8 @@ import base64
 import secrets
 
 Auths = {}
-MAX_TOKEN_AGE = 60*60*48 # 2 Days
+# MAX_TOKEN_AGE = 60*60*48 # 2 Days
+MAX_TOKEN_AGE = 60*30 # 30 minutes - school use
 
 
 def GetToken(uID):
