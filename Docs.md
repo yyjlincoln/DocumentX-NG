@@ -9,9 +9,9 @@
 | -302       | Failed to save to the database                                          |
 | -400       | Permission Error                                                        |
 | -401       | Sign in is required                                                     |
-| -401       | User not exist                                                          |
 | -402       | Authentication could not be completed because argument x does not exist |
 | -403       | User already exist                                                      |
+| -404       | User not exist                                                          |
 | -500       | User-Agent Not Supported (General)                                      |
 | -501       | Wechat-UA Not Supported                                                 |
 

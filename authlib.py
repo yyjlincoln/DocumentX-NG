@@ -2,6 +2,9 @@ from database import User
 from flask import request, jsonify
 import inspect
 from functools import wraps
+import core
+import time
+
 
 # TODO Token management & Complete User Auth
 
@@ -19,11 +22,18 @@ def ReturnHandler(code, message, as_decorator=False, **kw):
 
 
 def _password(uID, password):
+    u = core.GetUserByID(uID)
+    if u:
+        if u.password == password:
+            return {
+                'code': 0,
+                'uid': u.uID,
+                'message': 'success'
+            }
     # To be done
     return {
-        'code': 0,
-        'uid': uID,
-        'message': 'success'
+        'code': -400,
+        'message': 'Authentication failed.'
     }
 
 
@@ -134,8 +144,31 @@ def download_ua_check():
     }
 
 
+def v_token(uID, token):
+    u = core.GetUserByID(uID)
+    if u:
+        for x in u.token:
+            if x.token == token and x.expires > time.time():
+                return {
+                    'code': 0,
+                    'message': 'Token validation success'
+                }
+            else:
+                return {
+                    'code': -1,
+                    'message': 'Token has expired'
+                }
+
+    return {
+        'code': -1,
+        'message': 'Token validation failed'
+    }
+
+    pass
+
+
 levels = {
     'document_access': [_test_allow, download_ua_check],
-    'verify_token': [_test_single_token],
+    'verify_token': [v_token],
     'login': [_password]
 }

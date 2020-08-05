@@ -1,4 +1,4 @@
-from database import Document, me, User
+from database import Document, me, User, Token
 import time
 import random
 import hashlib
@@ -64,6 +64,36 @@ def GetUserByID(uID):
     return None
 
 
+def GetUserToken(uID):
+    u = GetUserByID(uID)
+    if u:
+        t = Token(created=time.time(), token=secrets.token_urlsafe(),
+                expires=time.time()+(60*60*48))
+        u.currentTokens.append(t)
+        # TODO Clear expired tokens
+        try:
+            u.save()
+            return {
+                'code':0,
+                'message':'Successfully got the token',
+                'token':t.token
+            }
+        except:
+            return {
+                'code':-1,
+                'message':'Could not acquire token',
+                'token':None
+            }
+    return {
+        'code':-1,
+        'message':'Could not acquire token',
+        'token':None
+    }
+
+
+    
+
+
 def NewUser(uID, name, password):
     # Check if uID is unique
     if GetUserByID(uID):
@@ -72,7 +102,8 @@ def NewUser(uID, name, password):
             'message': 'User already exists'
         }
     try:
-        u = User(uID=uID, name=name, password=password, dRegistered = time.time())
+        u = User(uID=uID, name=name, password=password,
+                 dRegistered=time.time())
         u.save()
         return {
             'code': 0,
