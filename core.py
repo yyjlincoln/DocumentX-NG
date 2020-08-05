@@ -6,6 +6,7 @@ import base64
 import secrets
 
 Auths = {}
+MAX_TOKEN_AGE = 60*60*48 # 2 Days
 
 
 def GetToken(uID):
@@ -68,9 +69,17 @@ def GetUserToken(uID):
     u = GetUserByID(uID)
     if u:
         t = Token(created=time.time(), token=secrets.token_urlsafe(),
-                  expires=time.time()+(60*60*48))
+                  expires=time.time()+MAX_TOKEN_AGE)
         u.currentTokens.append(t)
-        # TODO Clear expired tokens
+
+        ct = 0
+        for _ in range(len(u.currentTokens)):
+            if u.currentTokens[ct].expires < time.time():
+                u.currentTokens.pop(ct)
+                # Remove expired token and don't update index
+            else:
+                ct += 1
+
         try:
             u.save()
             return {
