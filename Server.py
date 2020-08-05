@@ -75,6 +75,7 @@ def uploadDocument(name, subject, comments='', desc='', status='Recorded', docID
 
 
 @app.route('/getDocuments')
+@authlib.authDec()
 def getDocuments():
     r = []
     for x in core.GetDocuments():
@@ -88,6 +89,7 @@ def getDocuments():
 
 
 @app.route('/getDocumentByID')
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def getDocumentByDocumentID(docID):
     r = core.GetDocByDocID(docID)
@@ -103,6 +105,7 @@ def getDocumentByDocumentID(docID):
 
 
 @app.route('/searchDocumentsByID')
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def searchDocumentsByID(docID):
     r = []
@@ -117,6 +120,7 @@ def searchDocumentsByID(docID):
 
 
 @app.route('/searchDocumentsBySubject')
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def searchDocumentsBySubject(subject):
     r = []
@@ -131,6 +135,7 @@ def searchDocumentsBySubject(subject):
 
 
 @app.route('/searchDocumentsByName')
+@authlib.authDec()
 @GetArgs(RequestErrorHandler)
 def searchDocumentsByName(name):
     r = []
@@ -291,7 +296,7 @@ def login(uID):
         'token': r['token'],
         'name': u.name
     })
-    # return core.GetUserToken(uID)
+    # return core.GetUserTokesn(uID)
     # return jsonify({
     #     'code': 0,
     #     'uID': uID,
