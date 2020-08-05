@@ -305,3 +305,11 @@ def login(uID):
 @GetArgs(RequestErrorHandler)
 def register(uID, name, password):
     return jsonify(core.NewUser(uID, name, password))
+
+@app.route('/getAuthStatus')
+@authlib.authDec()
+def getAuthStatus():
+    return {
+        'code':0,
+        'message':'Auth ok'
+    }
