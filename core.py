@@ -58,8 +58,7 @@ def DeleteDocs(docID):
 
 
 def GetUserByID(uID):
-    uID = uID.lower()
-    u = User.objects(uID=uID).first()
+    u = User.objects(uID__iexact=uID).first()
     if u:
         return u
     return None
