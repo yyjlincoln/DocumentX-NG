@@ -286,10 +286,10 @@ def login(uID):
     r = core.GetUserToken(uID)
     return jsonify({
         'code': r['code'],
-        'uID': uID,
+        'uID': u.uID,
         'message': r['message'],
         'token': r['token'],
-        'name': r['name']
+        'name': u.name
     })
     # return core.GetUserToken(uID)
     # return jsonify({
