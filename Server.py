@@ -304,4 +304,4 @@ def login(uID):
 @app.route('/register', methods=['POST'])
 @GetArgs(RequestErrorHandler)
 def register(uID, name, password):
-    return jsonify(core.NewUser(uID, name, password))
+    return jsonify(core.NewUser(uID.lower(), name, password))

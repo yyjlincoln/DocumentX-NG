@@ -58,6 +58,7 @@ def DeleteDocs(docID):
 
 
 def GetUserByID(uID):
+    uID = uID.lower()
     u = User.objects(uID=uID).first()
     if u:
         return u
@@ -68,30 +69,27 @@ def GetUserToken(uID):
     u = GetUserByID(uID)
     if u:
         t = Token(created=time.time(), token=secrets.token_urlsafe(),
-                expires=time.time()+(60*60*48))
+                  expires=time.time()+(60*60*48))
         u.currentTokens.append(t)
         # TODO Clear expired tokens
         try:
             u.save()
             return {
-                'code':0,
-                'message':'Successfully got the token',
-                'token':t.token
+                'code': 0,
+                'message': 'Successfully got the token',
+                'token': t.token
             }
         except:
             return {
-                'code':-1,
-                'message':'Could not acquire token',
-                'token':None
+                'code': -1,
+                'message': 'Could not acquire token',
+                'token': None
             }
     return {
-        'code':-1,
-        'message':'Could not acquire token',
-        'token':None
+        'code': -1,
+        'message': 'Could not acquire token',
+        'token': None
     }
-
-
-    
 
 
 def NewUser(uID, name, password):
