@@ -290,5 +290,3 @@ def login(uID):
 @GetArgs(RequestErrorHandler)
 def register(uID, name, password):
     return jsonify(core.NewUser(uID, name, password))
-
-app.run()
