@@ -276,7 +276,7 @@ def GenerateQR(urlEncoded):
 @authlib.authDec('login')
 @GetArgs(RequestErrorHandler)
 def login(uID):
-    return core.GetToken(uID)
+    return core.GetUserToken(uID)
     # return jsonify({
     #     'code': 0,
     #     'uID': uID,
@@ -290,3 +290,5 @@ def login(uID):
 @GetArgs(RequestErrorHandler)
 def register(uID, name, password):
     return jsonify(core.NewUser(uID, name, password))
+
+app.run()

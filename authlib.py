@@ -147,17 +147,18 @@ def download_ua_check():
 def v_token(uID, token):
     u = core.GetUserByID(uID)
     if u:
-        for x in u.token:
-            if x.token == token and x.expires > time.time():
-                return {
-                    'code': 0,
-                    'message': 'Token validation success'
-                }
-            else:
-                return {
-                    'code': -1,
-                    'message': 'Token has expired'
-                }
+        for x in u.currentTokens:
+            if x.token == token:
+                if x.expires > time.time():
+                    return {
+                        'code': 0,
+                        'message': 'Token validation success'
+                    }
+                else:
+                    return {
+                        'code': -1,
+                        'message': 'Token has expired'
+                    }
 
     return {
         'code': -1,
