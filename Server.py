@@ -276,12 +276,20 @@ def GenerateQR(urlEncoded):
 @authlib.authDec('login')
 @GetArgs(RequestErrorHandler)
 def login(uID):
+    # Get name
+    u = core.GetUserByID(uID)
+    if not u:
+        return {
+            'code': -404,
+            'message': 'User does not exist'
+        }
     r = core.GetUserToken(uID)
     return jsonify({
         'code': r['code'],
         'uID': uID,
         'message': r['message'],
-        'token': r['token']
+        'token': r['token'],
+        'name': r['name']
     })
     # return core.GetUserToken(uID)
     # return jsonify({
