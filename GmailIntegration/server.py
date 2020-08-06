@@ -13,22 +13,14 @@ server = zmail.server(Config['email.email'], Config['email.password'])
 # server.get_mails()
 token = ''
 
-print('Now logging in to DocumentX.')
-print('How do you want to login?')
-mode = input(
-    'via Token [t] / PasswordHash [h] / Password [p][default]:').lower()
+
 uID = input('Please input your uID:')
-if mode == 't':
-    token = getpass.getpass('Enter token:')
-else:
-    pHash = ''
-    if mode == 'h':
-        pHash = getpass.getpass('Enter password hash (md5):')
-    else:
-        # Failover
-        pHash = hashlib.md5(getpass.getpass(
-            'Enter password:').encode()).hexdigest()
-    # Now make a login request
+
+pHash = hashlib.md5(getpass.getpass(
+    'Enter password:').encode()).hexdigest()
+
+
+def GetToken(uID, pHash):
     try:
         r = requests.post('https://apis.mcsrv.icu/login', {
             'uID': uID,
@@ -36,14 +28,34 @@ else:
         }).json()
         if r['code'] == 0:
             token = r['token']
+            return token
         else:
             print('Unable to authenticate with the server: ', r)
-            exit()
+            return False
     except Exception as e:
         print('Unable to authentiacte with the server due to an Python internal error:', e)
-        exit()
+        return False
 
-print('Started.')
+
+def PostFile(fStream):
+        # POST to the server
+    return requests.post('https://apis.mcsrv.icu/uploadDocument', data={
+        'name': subject,
+        'subject': 'Unspecified',
+        'comments': 'This record is automatically created by DocumentX Gmail Integration.',
+        'token': token,
+        'uID': uID
+    }, files={
+        'file': fStream
+    }).json()
+
+
+token = GetToken(uID, pHash)
+if token:
+    print('Started.')
+else:
+    print('Authentication failed.')
+    exit()
 
 while True:
     try:
@@ -54,43 +66,19 @@ while True:
             # Create a Stream
             fStream = io.BytesIO(fData)
             fStream.name = fileName
-            # POST to the server
-            r = requests.post('https://apis.mcsrv.icu/uploadDocument', data={
-                'name': subject,
-                'subject': 'Unspecified',
-                'comments': 'This record is automatically created by DocumentX Gmail Integration.',
-                'token': token,
-                'uID': uID
-            }, files={
-                'file': fStream
-            })
-
-            # status = 'Failed'
-            # DocID = 'unknown'
-            # try:
-            #     r = r.json()
-            #     status = r['message'] + ' ('+str(r['code'])+')'
-            #     DocID = r['docID']
-            # except Exception as e:
-            #     status = 'Failed ('+ str(e) + ')'
-
-            # htmlContent = f'''
-            # <p><b>File {fileName} has been scanned.</b></p>
-            # <p>{status}</p>
-            # <p></p>
-            # <p>DocID: {DocID}</p>
-            # <p>Link: <a href="https://apis.mcsrv.icu/viewDocumentByID?docID={DocID}">here</a></p>
-            # <img src="https://apis.mcsrv.icu/qr?urlEncoded={base64.b64encode(str(f'https://apis.mcsrv.icu/viewDocumentByID?docID={DocID}').encode()).decode()}"></img>
-            # <p></p>
-            # <p>This is an automated email from DocumentX-GmailIntegration.</p>
-            # '''
-            # try:
-            #     server.send_mail(Config['email.rc'],{
-            #         'subject':f'File {fileName} has been scanned.',
-            #         'content_html':htmlContent
-            #     })
-            # except Exception as e:
-            #     print('Could not send email reciept: '+str(e))
+            # Post file
+            r = PostFile(fStream)
+            if r['code'] == 0:
+                print('Successfully uploaded file #'+str(r['docID']))
+            elif r['code'] == -406:
+                print('Token has expired! Getting token...')
+                token = GetToken(uID, pHash)
+                print('Retrying...')
+                r = PostFile(fStream)
+                if r['code'] == 0:
+                    print('Successfully uploaded file #'+str(r['docID']))
+                else:
+                    print('Failed to upload file', r)
 
     except Exception as e:
         print('Could not get email.')

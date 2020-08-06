@@ -156,12 +156,12 @@ def v_token(uID, token):
                     }
                 else:
                     return {
-                        'code': -1,
+                        'code': -406,
                         'message': 'Token has expired'
                     }
 
     return {
-        'code': -1,
+        'code': -405,
         'message': 'Token validation failed'
     }
 

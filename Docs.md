@@ -12,6 +12,8 @@
 | -402       | Authentication could not be completed because argument x does not exist |
 | -403       | User already exist                                                      |
 | -404       | User not exist                                                          |
+| -405       | Invalid Token                                                           |
+| -406       | Token has expired                                                       |
 | -500       | User-Agent Not Supported (General)                                      |
 | -501       | Wechat-UA Not Supported                                                 |
 
