@@ -165,7 +165,6 @@ def v_token(uID, token):
         'message': 'Token validation failed'
     }
 
-    pass
 
 
 levels = {

@@ -70,7 +70,7 @@ while True:
             r = PostFile(fStream)
             if r['code'] == 0:
                 print('Successfully uploaded file #'+str(r['docID']))
-            elif r['code'] == -406:
+            elif r['code'] == -406 or r['code']==-405:
                 print('Token has expired! Getting token...')
                 token = GetToken(uID, pHash)
                 print('Retrying...')
@@ -81,6 +81,6 @@ while True:
                     print('Failed to upload file', r)
 
     except Exception as e:
-        print('Could not get email.')
+        print('Could not get email.',e)
     finally:
         time.sleep(30)
