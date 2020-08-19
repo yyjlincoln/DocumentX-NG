@@ -74,6 +74,7 @@ while True:
                 print('Token has expired! Getting token...')
                 token = GetToken(uID, pHash)
                 print('Retrying...')
+                fStream.seek(0)
                 r = PostFile(fStream)
                 if r['code'] == 0:
                     print('Successfully uploaded file #'+str(r['docID']))
