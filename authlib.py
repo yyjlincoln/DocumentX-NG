@@ -168,7 +168,7 @@ def v_token(uID, token):
 
 
 levels = {
-    'document_access': [_test_allow, download_ua_check],
+    'document_access': [download_ua_check, v_token], # No longer allow direct download. In the future it will actually check the permission of the document.
     'verify_token': [v_token],
     'login': [_password]
 }
