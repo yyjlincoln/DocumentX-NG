@@ -34,7 +34,6 @@ def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Re
 
     return 0, docID
 
-
 def GetDocByDocID(docID):
     return Document.objects(docID=docID).first()
 

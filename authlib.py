@@ -152,6 +152,37 @@ def doc_access_v_token(uID=None, token=None):
         'message':'Sign in is required.'
     }
 
+def doc_access(docID, uID=None, token=None):
+    d=core.GetDocByDocID(docID)
+    if d:
+        if d.accessLevel=='public':
+            return {
+                'code':0,
+                'message':'Public Document'
+            }
+        else:
+            # Not public - auth
+            authresult = doc_access_v_token(uID, token)
+            if authresult['code']!=0:
+                return authresult
+            # Check permission
+            if d.owner == uID:
+                return {
+                    'code':0,
+                    'message':'Document owner'
+                }
+            else:
+                for x in d.policies:
+                    if x.user == uID and x.read:
+                        return {
+                            'code':0,
+                            'message':'Policy allowed'
+                        }
+                return {
+                    'code': -400,
+                    'message':'You do not have the right to access this document.'
+                }
+
 def v_token(uID, token):
     u = core.GetUserByID(uID)
     if u:
