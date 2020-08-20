@@ -76,6 +76,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
 
 @app.route('/getDocuments')
 @authlib.authDec()
+@GetArgs(RequestErrorHandler)
 def getDocuments(uID=None):
     r = []
     for x in core.GetDocuments(uID=uID):
