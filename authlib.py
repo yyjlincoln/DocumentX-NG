@@ -148,45 +148,47 @@ def doc_access_v_token(uID=None, token=None):
     if uID and token:
         return v_token(uID, token)
     return {
-        'code':-401,
-        'message':'Sign in is required.'
+        'code': -401,
+        'message': 'Sign in is required.'
     }
+
 
 def doc_access(docID=None, uID=None, token=None):
     if docID:
-        d=core.GetDocByDocID(docID)
+        d = core.GetDocByDocID(docID)
         if d:
-            if d.accessLevel=='public':
+            if d.accessLevel == 'public':
                 return {
-                    'code':0,
-                    'message':'Public Document'
+                    'code': 0,
+                    'message': 'Public Document'
                 }
             else:
                 # Not public - auth
                 authresult = doc_access_v_token(uID, token)
-                if authresult['code']!=0:
+                if authresult['code'] != 0:
                     return authresult
                 # Check permission
-                if d.owner == uID:
+                if str(d.owner.lower()) == str(uID).lower():
                     return {
-                        'code':0,
-                        'message':'Document owner'
+                        'code': 0,
+                        'message': 'Document owner'
                     }
                 else:
                     for x in d.policies:
-                        if x.user == uID and x.read:
+                        if str(x.user) == str(uID) and x.read == True:
                             return {
-                                'code':0,
-                                'message':'Policy allowed'
+                                'code': 0,
+                                'message': 'Policy allowed'
                             }
                     return {
                         'code': -400,
-                        'message':'You do not have the right to access this document.'
+                        'message': 'You do not have the right to access this document.'
                     }
     return {
-        'code':-301,
-        'message':'Document does not exist'
+        'code': -301,
+        'message': 'Document does not exist'
     }
+
 
 def v_token(uID, token):
     u = core.GetUserByID(uID)
@@ -210,9 +212,9 @@ def v_token(uID, token):
     }
 
 
-
 levels = {
-    'document_access': [download_ua_check, doc_access], # No longer allow direct download. In the future it will actually check the permission of the document.
+    # No longer allow direct download. In the future it will actually check the permission of the document.
+    'document_access': [download_ua_check, doc_access],
     'verify_token': [v_token],
     'login': [_password]
 }
