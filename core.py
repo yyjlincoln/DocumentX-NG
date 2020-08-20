@@ -127,7 +127,7 @@ def GetDocuments(uID = None):
     if uID:
         # In the future, this should not only return documents which the uID owns but also display
         # document the uID have access to.
-        return Document.objects(owner = uID)
+        return Document.objects(owner__iexact = uID)
 
     # Currently allow guest access to the list of documents
     return Document.objects()
