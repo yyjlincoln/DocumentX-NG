@@ -34,3 +34,4 @@ class Document(me.Document):
     fileName = me.StringField(default='file')
     owner = me.StringField(required=True)
     # permissions = me.EmbeddedDocumentListField(Permissions)
+

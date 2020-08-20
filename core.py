@@ -20,14 +20,14 @@ def GetUsernameByUID(uID):
     return 'Test account'
 
 
-def NewDocument(name, subject, fileName, comments='', desc='', status='Recorded', docID=None):
+def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
         return -300, docID
     else:
         docID = str(int(time.time())) + secrets.token_urlsafe()[:5].lower()
     try:
         d = Document(name=name, docID=docID, subject=subject, status=status,
-                     dScanned=time.time(), comments=comments, desc=desc, fileName=fileName)
+                     dScanned=time.time(), comments=comments, desc=desc, fileName=fileName, owner=owner)
         d.save()
     except me.errors.NotUniqueError:
         return -300, docID
@@ -123,7 +123,13 @@ def NewUser(uID, name, password):
         }
 
 
-def GetDocuments():
+def GetDocuments(uID = None):
+    if uID:
+        # In the future, this should not only return documents which the uID owns but also display
+        # document the uID have access to.
+        return Document.objects(owner = uID)
+
+    # Currently allow guest access to the list of documents
     return Document.objects()
 
 

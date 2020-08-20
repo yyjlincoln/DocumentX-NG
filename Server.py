@@ -56,7 +56,7 @@ def allowedFile(filename):
 @app.route('/uploadDocument', methods=['POST'])
 @authlib.authDec()
 @GetArgs(RequestErrorHandler)
-def uploadDocument(name, subject, comments='', desc='', status='Recorded', docID=None):
+def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', docID=None):
     if 'file' not in request.files:
         return GeneralErrorHandler(-200, 'No file is uploaded.')
     f = request.files['file']
@@ -66,7 +66,7 @@ def uploadDocument(name, subject, comments='', desc='', status='Recorded', docID
         return GeneralErrorHandler(-201, 'Unsupported format')
     filename = secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
-                                  fileName=filename, desc=desc, status='Uploaded', docID=docID)
+                                  fileName=filename, desc=desc, status='Uploaded', docID=docID, owner = uID)
     f.save(os.path.join(FILESTORAGE, docID))
     return jsonify({
         'code': rst,
@@ -76,9 +76,9 @@ def uploadDocument(name, subject, comments='', desc='', status='Recorded', docID
 
 @app.route('/getDocuments')
 @authlib.authDec()
-def getDocuments():
+def getDocuments(uID=None):
     r = []
-    for x in core.GetDocuments():
+    for x in core.GetDocuments(uID=None):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -318,3 +318,5 @@ def getAuthStatus():
         'code':0,
         'message':'Auth ok'
     }
+
+app.run('localhost',port=80)
