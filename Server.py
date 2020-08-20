@@ -78,7 +78,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
 @authlib.authDec()
 def getDocuments(uID=None):
     r = []
-    for x in core.GetDocuments(uID=None):
+    for x in core.GetDocuments(uID=uID):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
