@@ -14,14 +14,12 @@ class User(me.Document):
     currentTokens = me.EmbeddedDocumentListField(Token, default=[])
 
 
-class Permissions(me.EmbeddedDocument):
-    user = me.StringField(required=True)
-    read = me.BooleanField(default=False)
+class Policy(me.EmbeddedDocument):
+    user = me.StringField(default=None)
+    group = me.StringField(default=None)
+    read = me.BooleanField(default=True)
     write = me.BooleanField(default=False)
 
-class DocumentAccess(me.EmbeddedDocument):
-    accessType = 'private' # Accepts private, public or shared
-    owner = ''
 
 class Document(me.Document):
     name = me.StringField(required=True)
@@ -33,11 +31,10 @@ class Document(me.Document):
     desc = me.StringField(default='')
     fileName = me.StringField(default='file')
     owner = me.StringField(required=True)
-    # permissions = me.EmbeddedDocumentListField(Permissions)
+    policies = me.EmbeddedDocumentListField(Policy, default=[])
+    accessLevel = me.StringField(default = 'private') # private or public
+
 
 conn = me.connect('documentx')
 
-if input('This will add owner prop to all documents. Input \"okay!\"')=='okay!':
-    for doc in Document.objects():
-        doc.owner = 'yijun.yan'
-        doc.save()
+# Code here
