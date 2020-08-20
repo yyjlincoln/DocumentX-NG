@@ -319,4 +319,4 @@ def getAuthStatus():
         'message':'Auth ok'
     }
 
-app.run('localhost',port=80)
+# app.run('localhost',port=80)

@@ -35,3 +35,9 @@ class Document(me.Document):
     owner = me.StringField(required=True)
     # permissions = me.EmbeddedDocumentListField(Permissions)
 
+conn = me.connect('documentx')
+
+if input('This will add owner prop to all documents. Input \"okay!\"')=='okay!':
+    for doc in Document.objects():
+        doc.owner = 'yijun.yan'
+        doc.save()
