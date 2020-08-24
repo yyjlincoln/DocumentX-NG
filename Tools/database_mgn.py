@@ -5,8 +5,6 @@ class Token(me.EmbeddedDocument):
     expires = me.FloatField()
     token = me.StringField()
 
-
-
 class Policy(me.EmbeddedDocument):
     user = me.StringField(default=None)
     group = me.StringField(default=None)

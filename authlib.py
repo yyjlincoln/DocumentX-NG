@@ -5,6 +5,10 @@ from functools import wraps
 import core
 import time
 
+class Operation():
+    class SkipAll():
+        pass
+    pass
 
 # TODO Token management & Complete User Auth
 
@@ -67,7 +71,9 @@ def auth(level='verify_token', **kw):
 
         # Call auth
         result = _hand(**_handarg)
-        if result['code'] != 0:
+        if isinstance(result, Operation.SkipAll):
+            return ReturnHandler(0, 'Authentication was successful. (SkipAll)')
+        elif result['code'] != 0:
             return ReturnHandler(**result)
 
     return ReturnHandler(0, 'Authentication was successful.')
@@ -211,10 +217,19 @@ def v_token(uID, token):
         'message': 'Token validation failed'
     }
 
+def rolecheck(uID=None):
+    u = core.GetUserByID(uID)
+    if u:
+        if u.role=='sudo' or u.role=='root':
+            return Operation.SkipAll()    
+    return {
+        'code':0,
+        'message':'Sudo check - not sudo'
+    }
 
 levels = {
     # No longer allow direct download. In the future it will actually check the permission of the document.
-    'document_access': [download_ua_check, doc_access],
+    'document_access': [download_ua_check, rolecheck, doc_access],
     'verify_token': [v_token],
     'login': [_password]
 }
