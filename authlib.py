@@ -218,10 +218,11 @@ def v_token(uID, token):
     }
 
 def rolecheck(uID=None):
-    u = core.GetUserByID(uID)
-    if u:
-        if u.role=='sudo' or u.role=='root':
-            return Operation.SkipAll()    
+    if uID:
+        u = core.GetUserByID(uID)
+        if u:
+            if u.role=='sudo' or u.role=='root':
+                return Operation.SkipAll()    
     return {
         'code':0,
         'message':'Sudo check - not sudo'
