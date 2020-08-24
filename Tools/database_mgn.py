@@ -5,13 +5,6 @@ class Token(me.EmbeddedDocument):
     expires = me.FloatField()
     token = me.StringField()
 
-class User(me.Document):
-    name = me.StringField(required=True)
-    uID = me.StringField(required=True, unique=True)
-    role = me.StringField(default='User')
-    dRegistered = me.FloatField(required=True)
-    password = me.StringField(required=True)
-    currentTokens = me.EmbeddedDocumentListField(Token, default=[])
 
 
 class Policy(me.EmbeddedDocument):
@@ -20,6 +13,14 @@ class Policy(me.EmbeddedDocument):
     read = me.BooleanField(default=True)
     write = me.BooleanField(default=False)
 
+class User(me.Document):
+    name = me.StringField(required=True)
+    uID = me.StringField(required=True, unique=True)
+    role = me.StringField(default='User')
+    dRegistered = me.FloatField(required=True)
+    password = me.StringField(required=True)
+    currentTokens = me.EmbeddedDocumentListField(Token, default=[])
+    policies = me.EmbeddedDocumentListField(Policy, default=[])
 
 class Document(me.Document):
     name = me.StringField(required=True)
@@ -38,3 +39,6 @@ class Document(me.Document):
 conn = me.connect('documentx')
 
 # Code here
+for x in User.objects():
+    x.policies = []
+    x.save()
