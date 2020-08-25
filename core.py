@@ -53,7 +53,7 @@ def SearchDocsByName(name):
 
 def GetTokenMaxAge(uID=None):
     if uID:
-        u = User.objects(uID__iexact=uID)
+        u = GetUserByID(uID)
         if u:
             try:
                 if u.tokenMaxAge:
