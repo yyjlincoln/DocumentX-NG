@@ -55,12 +55,8 @@ def GetTokenMaxAge(uID=None):
     if uID:
         u = GetUserByID(uID)
         if u:
-            try:
-                if u.tokenMaxAge:
-                    return u.tokenMaxAge
-            except:
-                # tokenMaxAge does not exist, pass and use default
-                pass
+            if u.tokenMaxAge:
+                return u.tokenMaxAge
     return DEFAULT_MAX_TOKEN_AGE
 
 
