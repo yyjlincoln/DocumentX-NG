@@ -53,10 +53,14 @@ def SearchDocsByName(name):
 
 def GetTokenMaxAge(uID=None):
     if uID:
-        u = User.objects(name__iexact=uID)
+        u = User.objects(uID__iexact=uID)
         if u:
-            if u.tokenMaxAge:
-                return u.tokenMaxAge
+            try:
+                if u.tokenMaxAge:
+                    return u.tokenMaxAge
+            except:
+                # tokenMaxAge does not exist, pass and use default
+                pass
     return DEFAULT_MAX_TOKEN_AGE
 
 
