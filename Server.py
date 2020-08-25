@@ -53,6 +53,34 @@ def allowedFile(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+@app.route('/setTokenMaxAge')
+@authlib.authDec()
+@GetArgs(RequestErrorHandler)
+def setTokenMaxAge(uID,maxage=None):
+    try:
+        if maxage>=15:
+            if core.SetTokenMaxAge(uID, float(maxage) if maxage!=None else None):
+                return jsonify({
+                    'code':0,
+                    'message':'success'
+                })
+            return jsonify({
+                'code':-1,
+                'message':'Failed to set max age'
+            })
+        return jsonify({
+            'code':-1,
+            'message':'Max age must be greater than 15s.'
+        })
+    except:
+        return jsonify({
+            'code':-1,
+            'message':'Invalid max age'
+        })
+
+
+
+
 @app.route('/uploadDocument', methods=['POST'])
 @authlib.authDec()
 @GetArgs(RequestErrorHandler)

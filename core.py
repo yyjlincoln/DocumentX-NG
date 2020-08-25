@@ -74,6 +74,19 @@ def GetUserByID(uID):
         return u
     return None
 
+def SetTokenMaxAge(uID, MaxAge = None):
+    u = GetUserByID(uID)
+    try:
+        if u:
+            u.tokenMaxAge = MaxAge
+            u.currentTokens = []
+            # Reset all tokens
+            u.save()
+            return True
+        return False
+    except:
+        return None
+
 
 def GetUserToken(uID):
     u = GetUserByID(uID)
