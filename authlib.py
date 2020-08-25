@@ -6,8 +6,14 @@ import core
 import time
 
 class Operation():
-    class SkipAll():
-        pass
+    class SkipAll(object):
+        def __init__(self,obj={}):
+            self.obj = obj
+        def __getitem__(self, name):
+            return self.obj.__getitem__(name)
+        def __setitem__(self, name, value):
+            return self.obj.__setitem__(name, value)
+
     pass
 
 # TODO Token management & Complete User Auth
@@ -79,7 +85,7 @@ def auth(level='verify_token', **kw):
     return ReturnHandler(0, 'Authentication was successful.')
 
 
-def authDec(level='verify_token', **kw):
+def authDec(level='', **kw):
     if level not in levels:
         raise Exception('Authentication method is not defined')
 
@@ -159,7 +165,7 @@ def doc_access_v_token(uID=None, token=None):
     }
 
 
-def doc_access(docID=None, uID=None, token=None):
+def doc_read(docID=None, uID=None, token=None):
     if docID:
         d = core.GetDocByDocID(docID)
         if d:
@@ -181,7 +187,43 @@ def doc_access(docID=None, uID=None, token=None):
                     }
                 else:
                     for x in d.policies:
-                        if str(x.user) == str(uID) and x.read == True:
+                        if str(x.user).lower() == str(uID).lower() and x.read == True:
+                            return {
+                                'code': 0,
+                                'message': 'Policy allowed'
+                            }
+                    return {
+                        'code': -400,
+                        'message': 'You do not have the right to access this document.'
+                    }
+    return {
+        'code': -301,
+        'message': 'Document does not exist'
+    }
+
+def doc_write(docID=None, uID=None, token=None):
+    if docID:
+        d = core.GetDocByDocID(docID)
+        if d:
+            if d.accessLevel == 'public':
+                return {
+                    'code': 0,
+                    'message': 'Public Document'
+                }
+            else:
+                # Not public - auth
+                authresult = doc_access_v_token(uID, token)
+                if authresult['code'] != 0:
+                    return authresult
+                # Check permission
+                if str(d.owner.lower()) == str(uID).lower():
+                    return {
+                        'code': 0,
+                        'message': 'Document owner'
+                    }
+                else:
+                    for x in d.policies:
+                        if str(x.user).lower() == str(uID).lower() and x.write == True:
                             return {
                                 'code': 0,
                                 'message': 'Policy allowed'
@@ -222,7 +264,10 @@ def rolecheck(uID=None):
         u = core.GetUserByID(uID)
         if u:
             if u.role=='sudo' or u.role=='root':
-                return Operation.SkipAll()    
+                return Operation.SkipAll({
+                    'code':1001,
+                    'message':'Sudo user'
+                })    
     return {
         'code':0,
         'message':'Sudo check - not sudo'
@@ -230,7 +275,9 @@ def rolecheck(uID=None):
 
 levels = {
     # No longer allow direct download. In the future it will actually check the permission of the document.
-    'document_access': [download_ua_check, rolecheck, doc_access],
+    'document_access': [download_ua_check, rolecheck, doc_read],
+    'doc_read':[rolecheck, doc_read],
+    'doc_write':[rolecheck,doc_write],
     'verify_token': [v_token],
     'login': [_password]
 }

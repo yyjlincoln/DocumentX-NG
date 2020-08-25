@@ -54,7 +54,7 @@ def allowedFile(filename):
 
 
 @app.route('/setTokenMaxAge')
-@authlib.authDec()
+@authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def setTokenMaxAge(uID,maxage):
     maxage = float(maxage)
@@ -76,7 +76,7 @@ def setTokenMaxAge(uID,maxage):
 
 
 @app.route('/uploadDocument', methods=['POST'])
-@authlib.authDec()
+@authlib.authDec('verify_token') # Change to verify_permission and allow authdec to pass args to the auth handler
 @GetArgs(RequestErrorHandler)
 def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', docID=None):
     if 'file' not in request.files:
@@ -95,9 +95,18 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
         'docID': docID
     })
 
+@app.route('/share')
+@authlib.authDec('doc_write')
+@GetArgs(RequestErrorHandler)
+def shareDocument(docID):
+    
+    return {
+        'code':-1,
+        'message':'Under development'
+    }
 
 @app.route('/getDocuments')
-@authlib.authDec()
+@authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def getDocuments(uID=None):
     r = []
@@ -112,7 +121,7 @@ def getDocuments(uID=None):
 
 
 @app.route('/getDocumentByID')
-@authlib.authDec()
+@authlib.authDec('doc_read')
 @GetArgs(RequestErrorHandler)
 def getDocumentByDocumentID(docID):
     r = core.GetDocByDocID(docID)
@@ -128,7 +137,7 @@ def getDocumentByDocumentID(docID):
 
 
 @app.route('/searchDocumentsByID')
-@authlib.authDec()
+@authlib.authDec('verify_token') # TODO change
 @GetArgs(RequestErrorHandler)
 def searchDocumentsByID(docID):
     r = []
@@ -143,7 +152,7 @@ def searchDocumentsByID(docID):
 
 
 @app.route('/searchDocumentsBySubject')
-@authlib.authDec()
+@authlib.authDec('verify_token') # TODO change
 @GetArgs(RequestErrorHandler)
 def searchDocumentsBySubject(subject):
     r = []
@@ -158,7 +167,7 @@ def searchDocumentsBySubject(subject):
 
 
 @app.route('/searchDocumentsByName')
-@authlib.authDec()
+@authlib.authDec('verify_token') # TODO change
 @GetArgs(RequestErrorHandler)
 def searchDocumentsByName(name):
     r = []
@@ -173,7 +182,7 @@ def searchDocumentsByName(name):
 
 
 @app.route('/deleteDocumentByID')
-@authlib.authDec()
+@authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
 def deleteDocumentByID(docID):
     if os.path.exists(os.path.join(FILESTORAGE, docID)) and os.path.isfile(os.path.join(FILESTORAGE, docID)):
@@ -226,7 +235,7 @@ def getDownloadLink(docID):
 
 
 @app.route('/editDocumentByID', methods=['GET', 'POST'])
-@authlib.authDec()
+@authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
 def editDocumentByID(docID, properties, elToken=None):
     doc = core.GetDocByDocID(docID)
@@ -335,7 +344,7 @@ def register(uID, name, password):
     return jsonify(core.NewUser(uID, name, password))
 
 @app.route('/getAuthStatus')
-@authlib.authDec()
+@authlib.authDec('verify_token')
 def getAuthStatus():
     return {
         'code':0,
