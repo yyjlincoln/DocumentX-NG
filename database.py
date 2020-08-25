@@ -21,6 +21,7 @@ class User(me.Document):
     password = me.StringField(required=True)
     currentTokens = me.EmbeddedDocumentListField(Token, default=[])
     policies = me.EmbeddedDocumentListField(Policy, default=[])
+    tokenMaxAge = me.FloatField()
 
 class Document(me.Document):
     name = me.StringField(required=True)

@@ -7,7 +7,7 @@ import secrets
 
 Auths = {}
 # MAX_TOKEN_AGE = 60*60*48 # 2 Days
-MAX_TOKEN_AGE = 60*30 # 30 minutes - school use
+DEFAULT_MAX_TOKEN_AGE = 60*30  # 30 minutes - school use
 
 
 def GetToken(uID):
@@ -34,6 +34,7 @@ def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Re
 
     return 0, docID
 
+
 def GetDocByDocID(docID):
     return Document.objects(docID=docID).first()
 
@@ -48,6 +49,15 @@ def SearchDocsBySubject(subject):
 
 def SearchDocsByName(name):
     return Document.objects(name__icontains=name)
+
+
+def GetTokenMaxAge(uID=None):
+    if uID:
+        u = User.objects(name__iexact=uID)
+        if u:
+            if u.tokenMaxAge:
+                return u.tokenMaxAge
+    return DEFAULT_MAX_TOKEN_AGE
 
 
 def DeleteDocs(docID):
@@ -69,7 +79,7 @@ def GetUserToken(uID):
     u = GetUserByID(uID)
     if u:
         t = Token(created=time.time(), token=secrets.token_urlsafe(),
-                  expires=time.time()+MAX_TOKEN_AGE)
+                  expires=time.time()+GetTokenMaxAge(uID))
         u.currentTokens.append(t)
 
         ct = 0
@@ -109,7 +119,7 @@ def NewUser(uID, name, password):
         }
     try:
         u = User(uID=uID, name=name, password=password,
-                 dRegistered=time.time())
+                 dRegistered=time.time(), tokenMaxAge=DEFAULT_MAX_TOKEN_AGE)
         u.save()
         return {
             'code': 0,
@@ -122,11 +132,11 @@ def NewUser(uID, name, password):
         }
 
 
-def GetDocuments(uID = None):
+def GetDocuments(uID=None):
     if uID:
         # In the future, this should not only return documents which the uID owns but also display
         # document the uID have access to.
-        return Document.objects(owner__iexact = uID)
+        return Document.objects(owner__iexact=uID)
 
     # Currently allow guest access to the list of documents
     return Document.objects()
