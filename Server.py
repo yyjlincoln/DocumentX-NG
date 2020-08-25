@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, redirect, send_file, Response
 from utils import GetArgs
 from flask_mongoengine import MongoEngine
-from database import Document, User
+from database import Document, User, Policy
 import core
 from werkzeug.utils import secure_filename
 import os
@@ -98,8 +98,33 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
 @app.route('/share')
 @authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
-def shareDocument(docID):
-    
+def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
+    d = core.GetDocByDocID(docID)
+    read = True if read=='true' else False
+    write = True if write=='true' else False
+    if d:
+        try:
+            d.policies.append(Policy(uID=targetUID, read=read, write=write))
+            return jsonify({
+                'code':0,
+                'result':{
+                    'TargetUID':targetUID,
+                    'read':read,
+                    'write':write
+                }
+            })
+        except Exception as e:
+            print(e)
+            return jsonify({
+                'code':-1,
+                'message':'Error'
+            })
+
+    return jsonify({
+        'code':-1,
+        'message':'Error'
+    })
+
     return {
         'code':-1,
         'message':'Under development'
