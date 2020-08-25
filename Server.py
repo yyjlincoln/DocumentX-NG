@@ -56,9 +56,9 @@ def allowedFile(filename):
 @app.route('/setTokenMaxAge')
 @authlib.authDec()
 @GetArgs(RequestErrorHandler)
-def setTokenMaxAge(uID,maxage=None):
+def setTokenMaxAge(uID,maxage):
     maxage = float(maxage)
-    if maxage>=15:
+    if maxage>=15 or maxage==0:
         if core.SetTokenMaxAge(uID, maxage):
             return jsonify({
                 'code':0,
