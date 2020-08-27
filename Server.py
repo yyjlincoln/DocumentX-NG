@@ -110,6 +110,13 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
     write = True if write=='true' else False
     if d:
         try:
+            # Try if the policy for that user exists
+            policies = d.policies.filter(uID=uID)
+            if len(policies)>=1:
+                # Delete previous policies
+                for x in policies:
+                    d.policies.remove(x)                
+
             d.policies.append(Policy(uID=targetUID, read=read, write=write))
             d.save()
             return jsonify({
