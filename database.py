@@ -8,7 +8,7 @@ class Token(me.EmbeddedDocument):
 
 
 class Policy(me.EmbeddedDocument):
-    user = me.StringField(default=None)
+    uID = me.StringField(default=None)
     group = me.StringField(default=None)
     read = me.BooleanField(default=True)
     write = me.BooleanField(default=False)
