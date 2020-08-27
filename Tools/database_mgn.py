@@ -38,6 +38,8 @@ class Document(me.Document):
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     accessLevel = me.StringField(default = 'private') # private or public
 
+me.connect('documentx')
+
 for x in Document.objects():
     changeFlag = False
     for y in x.policies:
