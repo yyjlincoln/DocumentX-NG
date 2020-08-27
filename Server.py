@@ -111,11 +111,9 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
     if d:
         try:
             # Try if the policy for that user exists
-            policies = d.policies.filter(uID=uID)
-            if len(policies)>=1:
-                # Delete previous policies
-                for x in policies:
-                    d.policies.remove(x)                
+            for x in range(len(d.policies)-1,-1,-1):
+                if str(d.policies[x].uID).lower()==uID.lower():
+                    d.policies.pop(x)
 
             d.policies.append(Policy(uID=targetUID, read=read, write=write))
             d.save()
