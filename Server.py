@@ -112,7 +112,7 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
         try:
             # Try if the policy for that user exists
             for x in range(len(d.policies)-1,-1,-1):
-                if str(d.policies[x].uID).lower()==uID.lower():
+                if str(d.policies[x].uID).lower()==targetUID.lower():
                     d.policies.pop(x)
 
             d.policies.append(Policy(uID=targetUID, read=read, write=write))
