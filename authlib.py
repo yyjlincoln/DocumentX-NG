@@ -187,7 +187,7 @@ def doc_read(docID=None, uID=None, token=None):
                     }
                 else:
                     for x in d.policies:
-                        if str(x.user).lower() == str(uID).lower() and x.read == True:
+                        if str(x.uID).lower() == str(uID).lower() and x.read == True:
                             return {
                                 'code': 0,
                                 'message': 'Policy allowed'
