@@ -223,7 +223,7 @@ def doc_write(docID=None, uID=None, token=None):
                     }
                 else:
                     for x in d.policies:
-                        if str(x.user).lower() == str(uID).lower() and x.write == True:
+                        if str(x.uID).lower() == str(uID).lower() and x.write == True:
                             return {
                                 'code': 0,
                                 'message': 'Policy allowed'

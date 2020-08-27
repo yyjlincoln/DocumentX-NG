@@ -111,6 +111,7 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
     if d:
         try:
             d.policies.append(Policy(uID=targetUID, read=read, write=write))
+            d.save()
             return jsonify({
                 'code':0,
                 'result':{
