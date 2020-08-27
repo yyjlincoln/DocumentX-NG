@@ -57,7 +57,13 @@ def allowedFile(filename):
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def setTokenMaxAge(uID,maxage):
-    maxage = float(maxage)
+    try:
+        maxage = float(maxage)
+    except:
+        return jsonify({
+            'code':-1,
+            'message':'Invalid maxage.'
+        })
     if maxage>=15 or maxage==0:
         if core.SetTokenMaxAge(uID, maxage):
             return jsonify({
@@ -108,7 +114,7 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
             return jsonify({
                 'code':0,
                 'result':{
-                    'TargetUID':targetUID,
+                    'targetUID':targetUID,
                     'read':read,
                     'write':write
                 }
@@ -124,11 +130,6 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
         'code':-1,
         'message':'Error'
     })
-
-    return {
-        'code':-1,
-        'message':'Under development'
-    }
 
 @app.route('/getDocuments')
 @authlib.authDec('verify_token')
