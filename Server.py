@@ -82,7 +82,7 @@ def setTokenMaxAge(uID,maxage):
 
 
 @app.route('/uploadDocument', methods=['POST'])
-@authlib.authDec('verify_token') # Change to verify_permission and allow authdec to pass args to the auth handler
+@authlib.authDec('verify_upload') # Change to verify_permission and allow authdec to pass args to the auth handler
 @GetArgs(RequestErrorHandler)
 def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', docID=None):
     if 'file' not in request.files:

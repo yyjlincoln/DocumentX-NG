@@ -5,18 +5,22 @@ from functools import wraps
 import core
 import time
 
+
 class Operation():
     class SkipAll(object):
-        def __init__(self,obj={}):
+        def __init__(self, obj={}):
             self.obj = obj
+
         def __getitem__(self, name):
             return self.obj.__getitem__(name)
+
         def __setitem__(self, name, value):
             return self.obj.__setitem__(name, value)
 
     pass
 
 # TODO Token management & Complete User Auth
+
 
 def ReturnHandler(code, message, as_decorator=False, **kw):
     r = {
@@ -201,6 +205,7 @@ def doc_read(docID=None, uID=None, token=None):
         'message': 'Document does not exist'
     }
 
+
 def doc_write(docID=None, uID=None, token=None):
     if docID:
         d = core.GetDocByDocID(docID)
@@ -259,25 +264,54 @@ def v_token(uID, token):
         'message': 'Token validation failed'
     }
 
-def rolecheck(uID=None):
-    if uID:
+
+def rolecheck(uID=None, token = None):
+    if not uID or not token:
+        return {
+            'code':0,
+            'message':'token verification failed - continue'
+        }
+    # Check login stat
+    if uID and token:
+        r = v_token(uID, token)
+        if r['code']!=0:
+            # Invalid login state
+            return {
+                'code':0,
+                'message':'Not sudo - login verification failed'
+            }
+
         u = core.GetUserByID(uID)
         if u:
-            if u.role=='sudo' or u.role=='root':
+            if u.role == 'sudo' or u.role == 'root':
                 return Operation.SkipAll({
-                    'code':1001,
-                    'message':'Sudo user'
-                })    
+                    'code': 1001,
+                    'message': 'Sudo user'
+                })
     return {
-        'code':0,
-        'message':'Sudo check - not sudo'
+        'code': 0,
+        'message': 'Sudo check - not sudo'
     }
+
+def v_upload_permissions(uID):
+    u = core.GetUserByID(uID)
+    if u:
+        if u.role != 'demo' or u.role != 'temp':
+            return {
+                'code':0,
+                'message':'Upload right validation succeed'
+            }
+    return {
+        'code': -400,
+        'message': 'You do not have the right to upload a document.'
+    }    
 
 levels = {
     # No longer allow direct download. In the future it will actually check the permission of the document.
     'document_access': [download_ua_check, rolecheck, doc_read],
-    'doc_read':[rolecheck, doc_read],
-    'doc_write':[rolecheck,doc_write],
+    'doc_read': [rolecheck, doc_read],
+    'doc_write': [rolecheck, doc_write],
     'verify_token': [v_token],
-    'login': [_password]
+    'login': [_password],
+    'verify_upload': [rolecheck, v_token, v_upload_permissions]
 }
