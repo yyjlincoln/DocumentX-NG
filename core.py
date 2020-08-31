@@ -4,6 +4,8 @@ import random
 import hashlib
 import base64
 import secrets
+from mongoengine.queryset.visitor import Q
+
 
 Auths = {}
 # MAX_TOKEN_AGE = 60*60*48 # 2 Days
@@ -162,11 +164,11 @@ def GetDocuments(uID=None, archived=False):
         # In the future, this should not only return documents which the uID owns but also display
         # document the uID have access to.
         if archived==None:
-            return Document.objects(owner__iexact=uID)
-        return Document.objects(owner__iexact=uID, archived=bool(archived))
+            return Document.objects(owner__iexact=uID).order_by('-dScanned')
+        return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')
 
     # Currently allow guest access to the list of documents
-    return Document.objects()
+    return Document.objects().order_by('-dScanned')
 
 
 def GetAuthCode(docID):
