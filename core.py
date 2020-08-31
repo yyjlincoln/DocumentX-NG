@@ -50,7 +50,6 @@ def SearchDocsBySubject(subject):
 def SearchDocsByName(name):
     return Document.objects(name__icontains=name)
 
-
 def GetTokenMaxAge(uID=None):
     if uID:
         u = GetUserByID(uID)
@@ -74,7 +73,20 @@ def GetUserByID(uID):
         return u
     return None
 
-def SetTokenMaxAge(uID, MaxAge = None):
+
+def ArchiveDocument(docID):
+    d = GetDocByDocID(docID)
+    if d:
+        try:
+            d.archived = True
+            d.save()
+            return True
+        except:
+            return False
+    return False
+
+
+def SetTokenMaxAge(uID, MaxAge=None):
     u = GetUserByID(uID)
     try:
         if u:
@@ -144,12 +156,14 @@ def NewUser(uID, name, password):
             'message': 'Failed to register.'
         }
 
-
-def GetDocuments(uID=None):
+def GetDocuments(uID=None, archived=False):
+    'archived: None - Return All Documents; True - Only return archived; False - Only not archived.'
     if uID:
         # In the future, this should not only return documents which the uID owns but also display
         # document the uID have access to.
-        return Document.objects(owner__iexact=uID)
+        if archived==None:
+            return Document.objects(owner__iexact=uID)
+        return Document.objects(owner__iexact=uID, archived=bool(archived))
 
     # Currently allow guest access to the list of documents
     return Document.objects()

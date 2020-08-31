@@ -140,9 +140,17 @@ def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
 @app.route('/getDocuments')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
-def getDocuments(uID=None):
+def getDocuments(uID=None, status = 'active'):
+    archived = False
+    if status=='active':
+        archived=False
+    elif status=='archived':
+        archived=True
+    else:
+        archived=None
+
     r = []
-    for x in core.GetDocuments(uID=uID):
+    for x in core.GetDocuments(uID=uID, archived=archived):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -166,7 +174,6 @@ def getDocumentByDocumentID(docID):
         'code': 0,
         'result': r
     })
-
 
 @app.route('/searchDocumentsByID')
 @authlib.authDec('verify_token') # TODO change

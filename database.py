@@ -5,8 +5,6 @@ class Token(me.EmbeddedDocument):
     expires = me.FloatField()
     token = me.StringField()
 
-
-
 class Policy(me.EmbeddedDocument):
     uID = me.StringField(default=None)
     group = me.StringField(default=None)
@@ -35,3 +33,4 @@ class Document(me.Document):
     owner = me.StringField(required=True)
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     accessLevel = me.StringField(default = 'private') # private or public
+    archived = me.BooleanField(default=False)
