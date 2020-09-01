@@ -41,16 +41,17 @@ def GetDocByDocID(docID):
     return Document.objects(docID=docID).first()
 
 
-def SearchDocsByDocID(docID):
-    return Document.objects(docID__icontains=docID)
+def SearchDocsByDocID(docID, start=0, end=50):
+    return Document.objects(docID__icontains=docID)[start:end]
 
 
-def SearchDocsBySubject(subject):
-    return Document.objects(subject__icontains=subject)
+def SearchDocsBySubject(subject, start=0, end=50):
+    return Document.objects(subject__icontains=subject)[start:end]
 
 
-def SearchDocsByName(name):
-    return Document.objects(name__icontains=name)
+def SearchDocsByName(name, start=0, end=50):
+    return Document.objects(name__icontains=name)[start:end]
+
 
 def GetTokenMaxAge(uID=None):
     if uID:
@@ -158,14 +159,15 @@ def NewUser(uID, name, password):
             'message': 'Failed to register.'
         }
 
-def GetDocuments(uID=None, archived=False):
+
+def GetDocuments(uID=None, archived=False, start=0, end=50):
     'archived: None - Return All Documents; True - Only return archived; False - Only not archived.'
     if uID:
         # In the future, this should not only return documents which the uID owns but also display
         # document the uID have access to.
-        if archived==None:
-            return Document.objects(owner__iexact=uID).order_by('-dScanned')
-        return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')
+        if archived == None:
+            return Document.objects(owner__iexact=uID).order_by('-dScanned')[start:end]
+        return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')[start:end]
 
     # Currently allow guest access to the list of documents
     return Document.objects().order_by('-dScanned')

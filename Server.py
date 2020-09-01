@@ -56,33 +56,33 @@ def allowedFile(filename):
 @app.route('/setTokenMaxAge')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
-def setTokenMaxAge(uID,maxage):
+def setTokenMaxAge(uID, maxage):
     try:
         maxage = float(maxage)
     except:
         return jsonify({
-            'code':-1,
-            'message':'Invalid maxage.'
+            'code': -1,
+            'message': 'Invalid maxage.'
         })
-    if maxage>=15 or maxage==0:
+    if maxage >= 15 or maxage == 0:
         if core.SetTokenMaxAge(uID, maxage):
             return jsonify({
-                'code':0,
-                'message':'success'
+                'code': 0,
+                'message': 'success'
             })
         return jsonify({
-            'code':-1,
-            'message':'Failed to set max age'
+            'code': -1,
+            'message': 'Failed to set max age'
         })
     return jsonify({
-        'code':-1,
-        'message':'Max age must be greater than 15s.'
+        'code': -1,
+        'message': 'Max age must be greater than 15s.'
     })
 
 
-
 @app.route('/uploadDocument', methods=['POST'])
-@authlib.authDec('verify_upload') # Change to verify_permission and allow authdec to pass args to the auth handler
+# Change to verify_permission and allow authdec to pass args to the auth handler
+@authlib.authDec('verify_upload')
 @GetArgs(RequestErrorHandler)
 def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', docID=None):
     if 'file' not in request.files:
@@ -94,63 +94,73 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
         return GeneralErrorHandler(-201, 'Unsupported format')
     filename = secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
-                                  fileName=filename, desc=desc, status='Uploaded', docID=docID, owner = uID)
+                                  fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
     f.save(os.path.join(FILESTORAGE, docID))
     return jsonify({
         'code': rst,
         'docID': docID
     })
 
+
 @app.route('/share')
 @authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
-def shareDocument(uID, targetUID, docID, read = 'true', write = 'false'):
+def shareDocument(uID, targetUID, docID, read='true', write='false'):
     d = core.GetDocByDocID(docID)
-    read = True if read=='true' else False
-    write = True if write=='true' else False
+    read = True if read == 'true' else False
+    write = True if write == 'true' else False
     if d:
         try:
             # Try if the policy for that user exists
-            for x in range(len(d.policies)-1,-1,-1):
-                if str(d.policies[x].uID).lower()==targetUID.lower():
+            for x in range(len(d.policies)-1, -1, -1):
+                if str(d.policies[x].uID).lower() == targetUID.lower():
                     d.policies.pop(x)
 
             d.policies.append(Policy(uID=targetUID, read=read, write=write))
             d.save()
             return jsonify({
-                'code':0,
-                'result':{
-                    'targetUID':targetUID,
-                    'read':read,
-                    'write':write
+                'code': 0,
+                'result': {
+                    'targetUID': targetUID,
+                    'read': read,
+                    'write': write
                 }
             })
         except Exception as e:
             print(e)
             return jsonify({
-                'code':-1,
-                'message':'Error'
+                'code': -1,
+                'message': 'Error'
             })
 
     return jsonify({
-        'code':-1,
-        'message':'Error'
+        'code': -1,
+        'message': 'Error'
     })
+
 
 @app.route('/getDocuments')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
-def getDocuments(uID=None, status = 'active'):
+def getDocuments(uID=None, status='active', start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
     archived = False
-    if status=='active':
-        archived=False
-    elif status=='archived':
-        archived=True
+    if status == 'active':
+        archived = False
+    elif status == 'archived':
+        archived = True
     else:
-        archived=None
+        archived = None
 
     r = []
-    for x in core.GetDocuments(uID=uID, archived=archived):
+    for x in core.GetDocuments(uID=uID, archived=archived, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -175,12 +185,22 @@ def getDocumentByDocumentID(docID):
         'result': r
     })
 
+
 @app.route('/searchDocumentsByID')
-@authlib.authDec('verify_token') # TODO change
+@authlib.authDec('verify_token')  # TODO change
 @GetArgs(RequestErrorHandler)
-def searchDocumentsByID(docID):
+def searchDocumentsByID(docID, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
     r = []
-    for x in core.SearchDocsByDocID(docID):
+    for x in core.SearchDocsByDocID(docID, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -191,11 +211,20 @@ def searchDocumentsByID(docID):
 
 
 @app.route('/searchDocumentsBySubject')
-@authlib.authDec('verify_token') # TODO change
+@authlib.authDec('verify_token')  # TODO change
 @GetArgs(RequestErrorHandler)
-def searchDocumentsBySubject(subject):
+def searchDocumentsBySubject(subject, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
     r = []
-    for x in core.SearchDocsBySubject(subject):
+    for x in core.SearchDocsBySubject(subject, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -206,11 +235,20 @@ def searchDocumentsBySubject(subject):
 
 
 @app.route('/searchDocumentsByName')
-@authlib.authDec('verify_token') # TODO change
+@authlib.authDec('verify_token')  # TODO change
 @GetArgs(RequestErrorHandler)
-def searchDocumentsByName(name):
+def searchDocumentsByName(name, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
     r = []
-    for x in core.SearchDocsByName(name):
+    for x in core.SearchDocsByName(name, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -232,6 +270,8 @@ def deleteDocumentByID(docID):
     })
 
 # The authentication has been removed since this function has been depriciated.
+
+
 @app.route('/viewDocumentByID')
 @GetArgs(RequestErrorHandler)
 def viewDocumentByID(docID):
@@ -382,12 +422,13 @@ def login(uID):
 def register(uID, name, password):
     return jsonify(core.NewUser(uID, name, password))
 
+
 @app.route('/getAuthStatus')
 @authlib.authDec('verify_token')
 def getAuthStatus():
     return {
-        'code':0,
-        'message':'Auth ok'
+        'code': 0,
+        'message': 'Auth ok'
     }
 
 # app.run('localhost',port=80)
