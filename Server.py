@@ -146,6 +146,7 @@ def getDocuments(uID=None, status='active', start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
+        assert start<=end
     except:
         return jsonify({
             'code': -1,
@@ -193,6 +194,7 @@ def searchDocumentsByID(docID, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
+        assert start<=end
     except:
         return jsonify({
             'code': -1,
@@ -217,6 +219,7 @@ def searchDocumentsBySubject(subject, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
+        assert start<=end
     except:
         return jsonify({
             'code': -1,
@@ -241,6 +244,7 @@ def searchDocumentsByName(name, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
+        assert start<=end
     except:
         return jsonify({
             'code': -1,
