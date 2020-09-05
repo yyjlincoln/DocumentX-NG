@@ -45,7 +45,7 @@ def SearchDocsBySubject(uID, subject, start=0, end=50):
     return Document.objects(subject__icontains=subject)[start:end]
 
 def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
-    return Document.objects(hashTags__icontains=hashTag)[start:end]
+    return Document.objects(hashTags__iexact=hashTag)[start:end]
 
 def SearchDocsByName(uID, name, start=0, end=50):
     return Document.objects(name__icontains=name)[start:end]
