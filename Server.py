@@ -218,7 +218,7 @@ def getHashTags(uID):
     r = core.GetUserHashTags(uID)
     return jsonify({
         'code':0,
-        'result':[]
+        'result':r
     })
 
 @app.route('/searchDocumentsByHashTag')
