@@ -1,9 +1,11 @@
 import mongoengine as me
 
+
 class Token(me.EmbeddedDocument):
     created = me.FloatField()
     expires = me.FloatField()
     token = me.StringField()
+
 
 class Policy(me.EmbeddedDocument):
     uID = me.StringField(default=None)
@@ -32,5 +34,6 @@ class Document(me.Document):
     fileName = me.StringField(default='file')
     owner = me.StringField(required=True)
     policies = me.EmbeddedDocumentListField(Policy, default=[])
-    accessLevel = me.StringField(default = 'private') # private or public
+    accessLevel = me.StringField(default='private')  # private or public
     archived = me.BooleanField(default=False)
+    hashTags = me.ListField(me.StringField(),default=[])

@@ -188,9 +188,9 @@ def getDocumentByDocumentID(docID):
 
 
 @app.route('/searchDocumentsByID')
-@authlib.authDec('verify_token')  # TODO change
+@authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
-def searchDocumentsByID(docID, start='0', end='50'):
+def searchDocumentsByID(uID, docID, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
@@ -202,7 +202,41 @@ def searchDocumentsByID(docID, start='0', end='50'):
         })
 
     r = []
-    for x in core.SearchDocsByDocID(docID, start=start, end=end):
+    for x in core.SearchDocsByDocID(uID, docID, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
+@app.route('/getHashTags')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def getHashTags(uID):
+    r = core.GetUserHashTags(uID)
+    return jsonify({
+        'code':0,
+        'result':[]
+    })
+
+@app.route('/searchDocumentsByHashTag')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start<=end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.SearchDocsByHashTag(uID, hashTag, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -215,7 +249,7 @@ def searchDocumentsByID(docID, start='0', end='50'):
 @app.route('/searchDocumentsBySubject')
 @authlib.authDec('verify_token')  # TODO change
 @GetArgs(RequestErrorHandler)
-def searchDocumentsBySubject(subject, start='0', end='50'):
+def searchDocumentsBySubject(uID, subject, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
@@ -227,7 +261,7 @@ def searchDocumentsBySubject(subject, start='0', end='50'):
         })
 
     r = []
-    for x in core.SearchDocsBySubject(subject, start=start, end=end):
+    for x in core.SearchDocsBySubject(uID, subject, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -240,7 +274,7 @@ def searchDocumentsBySubject(subject, start='0', end='50'):
 @app.route('/searchDocumentsByName')
 @authlib.authDec('verify_token')  # TODO change
 @GetArgs(RequestErrorHandler)
-def searchDocumentsByName(name, start='0', end='50'):
+def searchDocumentsByName(uID, name, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
@@ -252,7 +286,7 @@ def searchDocumentsByName(name, start='0', end='50'):
         })
 
     r = []
-    for x in core.SearchDocsByName(name, start=start, end=end):
+    for x in core.SearchDocsByName(uID, name, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
@@ -411,14 +445,6 @@ def login(uID):
         'token': r['token'],
         'name': u.name
     })
-    # return core.GetUserTokesn(uID)
-    # return jsonify({
-    #     'code': 0,
-    #     'uID': uID,
-    #     'name': core.GetUsernameByUID(uID),
-    #     'token': core.GetToken(uID),
-    #     'message': 'Successfully logged in.'
-    # })
 
 
 @app.route('/register', methods=['POST'])

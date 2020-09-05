@@ -11,17 +11,6 @@ Auths = {}
 # MAX_TOKEN_AGE = 60*60*48 # 2 Days
 DEFAULT_MAX_TOKEN_AGE = 60*30  # 30 minutes - school use
 
-
-def GetToken(uID):
-    # [TODO]
-    return 'test'
-
-
-def GetUsernameByUID(uID):
-    # [TODO]
-    return 'Test account'
-
-
 def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
         return -300, docID
@@ -40,16 +29,25 @@ def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Re
 def GetDocByDocID(docID):
     return Document.objects(docID=docID).first()
 
+def GetUserHashTags(uID):
+    HashTags = []
+    for d in GetDocuments(uID, archived=None, start=0, end=0):
+        for x in d.hashTags:
+            if x not in HashTags:
+                HashTags.append(x)
+    return HashTags
 
-def SearchDocsByDocID(docID, start=0, end=50):
+def SearchDocsByDocID(uID, docID, start=0, end=50):
     return Document.objects(docID__icontains=docID)[start:end]
 
 
-def SearchDocsBySubject(subject, start=0, end=50):
+def SearchDocsBySubject(uID, subject, start=0, end=50):
     return Document.objects(subject__icontains=subject)[start:end]
 
+def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
+    return Document.objects(hashTag__icontains=subject)[start:end]
 
-def SearchDocsByName(name, start=0, end=50):
+def SearchDocsByName(uID, name, start=0, end=50):
     return Document.objects(name__icontains=name)[start:end]
 
 
@@ -162,15 +160,24 @@ def NewUser(uID, name, password):
 
 def GetDocuments(uID=None, archived=False, start=0, end=50):
     'archived: None - Return All Documents; True - Only return archived; False - Only not archived.'
+
     if uID:
         # In the future, this should not only return documents which the uID owns but also display
         # document the uID have access to.
-        if archived == None:
-            return Document.objects(owner__iexact=uID).order_by('-dScanned')[start:end]
-        return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')[start:end]
 
-    # Currently allow guest access to the list of documents
-    return Document.objects().order_by('-dScanned')
+        # Check if end is 0. If it is, then there should not be a limit.
+        if archived == None:
+            if end==0:
+                return Document.objects(owner__iexact=uID).order_by('-dScanned')
+            else:
+                return Document.objects(owner__iexact=uID).order_by('-dScanned')[start:end]
+        else:
+            if end==0:
+                return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')
+            else:
+                return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')[start:end]
+
+    return []
 
 
 def GetAuthCode(docID):
