@@ -11,6 +11,7 @@ Auths = {}
 # MAX_TOKEN_AGE = 60*60*48 # 2 Days
 DEFAULT_MAX_TOKEN_AGE = 60*30  # 30 minutes - school use
 
+
 def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
         return -300, docID
@@ -29,6 +30,7 @@ def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Re
 def GetDocByDocID(docID):
     return Document.objects(docID=docID).first()
 
+
 def GetUserHashTags(uID):
     HashTags = []
     for d in GetDocuments(uID, archived=None, start=0, end=0):
@@ -37,6 +39,7 @@ def GetUserHashTags(uID):
                 HashTags.append(x)
     return HashTags
 
+
 def SearchDocsByDocID(uID, docID, start=0, end=50):
     return Document.objects(docID__icontains=docID)[start:end]
 
@@ -44,8 +47,10 @@ def SearchDocsByDocID(uID, docID, start=0, end=50):
 def SearchDocsBySubject(uID, subject, start=0, end=50):
     return Document.objects(subject__icontains=subject)[start:end]
 
+
 def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
     return Document.objects(hashTags__iexact=hashTag)[start:end]
+
 
 def SearchDocsByName(uID, name, start=0, end=50):
     return Document.objects(name__icontains=name)[start:end]
@@ -167,15 +172,15 @@ def GetDocuments(uID=None, archived=False, start=0, end=50):
 
         # Check if end is 0. If it is, then there should not be a limit.
         if archived == None:
-            if end==0:
-                return Document.objects(owner__iexact=uID).order_by('-dScanned')
+            if end == 0:
+                return Document.objects(Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)).order_by('-dScanned')
             else:
-                return Document.objects(owner__iexact=uID).order_by('-dScanned')[start:end]
+                return Document.objects(owner__iexact=uID | Q(policies__uID__iexact=uID)).order_by('-dScanned')[start:end]
         else:
-            if end==0:
-                return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')
+            if end == 0:
+                return Document.objects((Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)) & Q(archived=archived)).order_by('-dScanned')
             else:
-                return Document.objects(Q(owner__iexact=uID) & Q(archived=archived)).order_by('-dScanned')[start:end]
+                return Document.objects((Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)) & Q(archived=archived)).order_by('-dScanned')[start:end]
 
     return []
 
