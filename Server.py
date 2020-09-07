@@ -114,9 +114,10 @@ def shareDocument(uID, targetUID, docID, read='true', write='false'):
             for x in range(len(d.policies)-1, -1, -1):
                 if str(d.policies[x].uID).lower() == targetUID.lower():
                     d.policies.pop(x)
-            
+
             if read or write:
-                d.policies.append(Policy(uID=targetUID, read=read, write=write))
+                d.policies.append(
+                    Policy(uID=targetUID, read=read, write=write))
 
             d.save()
             return jsonify({
@@ -147,7 +148,7 @@ def getDocuments(uID=None, status='active', start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -195,7 +196,7 @@ def searchDocumentsByID(uID, docID, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -212,15 +213,17 @@ def searchDocumentsByID(uID, docID, start='0', end='50'):
         'result': r
     })
 
+
 @app.route('/getHashTags')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def getHashTags(uID):
     r = core.GetUserHashTags(uID)
     return jsonify({
-        'code':0,
-        'result':r
+        'code': 0,
+        'result': r
     })
+
 
 @app.route('/searchDocumentsByHashTag')
 @authlib.authDec('verify_token')
@@ -229,7 +232,7 @@ def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -254,7 +257,7 @@ def searchDocumentsBySubject(uID, subject, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -279,7 +282,7 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -301,8 +304,8 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
 @authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
 def deleteDocumentByID(docID):
-    if os.path.exists(os.path.join(FILESTORAGE, docID)) and os.path.isfile(os.path.join(FILESTORAGE, docID)):
-        os.remove(os.path.join(FILESTORAGE, docID))
+    if os.path.exists(filestore.getStorageLocation(docID)) and os.path.isfile(filestore.getStorageLocation(docID)):
+        os.remove(filestore.getStorageLocation(docID))
     return jsonify({
         'code': 0,
         'result': core.DeleteDocs(docID)
@@ -381,8 +384,11 @@ def editDocumentByID(docID, properties, elToken=None):
 
     if 'docID' in properties:
         try:
-            os.rename(os.path.join(FILESTORAGE, docID),
-                      os.path.join(FILESTORAGE, properties['docID']))
+            if filestore.getStorageLocation(docID):
+                os.rename(filestore.getStorageLocation(docID),
+                          filestore.newStorageLocation(properties['docID']))
+            else:
+                raise Exception('Could not save the file')
         except:
             return GeneralErrorHandler(-1, 'Failed to move the file')
 
@@ -392,8 +398,7 @@ def editDocumentByID(docID, properties, elToken=None):
         if 'docID' in properties:
             try:
                 # Rollback
-                os.rename(os.path.join(FILESTORAGE, properties['docID']), os.path.join(
-                    FILESTORAGE, docID))
+                os.rename(filestore.getStorageLocation(properties['docID']), filestore.newStorageLocation(docID))
             except:
                 pass
 
