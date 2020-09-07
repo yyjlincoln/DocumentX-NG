@@ -175,7 +175,7 @@ def GetDocuments(uID=None, archived=False, start=0, end=50):
             if end == 0:
                 return Document.objects(Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)).order_by('-dScanned')
             else:
-                return Document.objects(owner__iexact=uID | Q(policies__uID__iexact=uID)).order_by('-dScanned')[start:end]
+                return Document.objects(Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)).order_by('-dScanned')[start:end]
         else:
             if end == 0:
                 return Document.objects((Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)) & Q(archived=archived)).order_by('-dScanned')
