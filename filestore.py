@@ -3,7 +3,7 @@ import os
 
 FILESTORAGE = '/etc/docx/fs'
 
-def newSrorageLocation(docID):
+def newStorageLocation(docID):
     return os.path.join(FILESTORAGE, docID)
 
 def getStorageLocation(docID):
