@@ -115,8 +115,10 @@ def shareDocument(uID, targetUID, docID, read='true', write='false'):
             for x in range(len(d.policies)-1, -1, -1):
                 if str(d.policies[x].uID).lower() == targetUID.lower():
                     d.policies.pop(x)
+            
+            if read or write:
+                d.policies.append(Policy(uID=targetUID, read=read, write=write))
 
-            d.policies.append(Policy(uID=targetUID, read=read, write=write))
             d.save()
             return jsonify({
                 'code': 0,
