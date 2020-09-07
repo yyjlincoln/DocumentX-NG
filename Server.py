@@ -13,6 +13,7 @@ import json
 import time
 import secrets
 import authlib
+import filestore
 
 # Initialize app
 app = Flask(__name__)
@@ -29,8 +30,6 @@ db.init_app(app)
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
                       'docx', 'xls', 'xlsx', 'ppt', 'pptx']
-FILESTORAGE = '/etc/docx/fs'
-# FILESTORAGE = "C:\\Temp\\"
 
 
 def RequestErrorHandler(func, code, missing):
@@ -95,7 +94,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     filename = secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
-    f.save(os.path.join(FILESTORAGE, docID))
+    f.save(filestore.newStorageLocation(docID))
     return jsonify({
         'code': rst,
         'docID': docID
@@ -411,7 +410,7 @@ def editDocumentByID(docID, properties, elToken=None):
 @GetArgs(RequestErrorHandler)
 def GetFile(auth=None, path=None, docID=None):
     if core.ValidatePermission(docID, auth):
-        return send_file(os.path.join(FILESTORAGE, docID))
+        return send_file(filestore.getStorageLocation(docID))
     return GeneralErrorHandler(-400, 'Access is denied'), 403
 
 
