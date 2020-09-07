@@ -28,7 +28,7 @@ def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Re
 
 
 def GetDocByDocID(docID):
-    return Document.objects(docID=docID).first()
+    return Document.objects(docID__iexact=docID).first()
 
 
 def GetUserHashTags(uID):
