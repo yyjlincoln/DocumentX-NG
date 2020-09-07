@@ -296,7 +296,7 @@ def rolecheck(uID=None, token = None):
 def v_upload_permissions(uID):
     u = core.GetUserByID(uID)
     if u:
-        if u.role != 'demo' and u.role != 'temp':
+        if u.role != 'demo' and u.role != 'temp' and u.role!='noupload':
             return {
                 'code':0,
                 'message':'Upload right validation succeed'
