@@ -249,6 +249,30 @@ def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
         'result': r
     })
 
+@app.route('/getDocumentsByHashTag')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def getDocumentsByHashTag(uID, hashTag, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start <= end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.GetDocsByHashTag(uID, hashTag, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
 
 @app.route('/searchDocumentsBySubject')
 @authlib.authDec('verify_token')  # TODO change
@@ -274,6 +298,30 @@ def searchDocumentsBySubject(uID, subject, start='0', end='50'):
         'result': r
     })
 
+@app.route('/getDocumentsBySubject')
+@authlib.authDec('verify_token')  # TODO change
+@GetArgs(RequestErrorHandler)
+def getDocumentsBySubject(uID, subject, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start <= end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.GetDocsBySubject(uID, subject, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
 
 @app.route('/searchDocumentsByName')
 @authlib.authDec('verify_token')  # TODO change
@@ -291,6 +339,30 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
 
     r = []
     for x in core.SearchDocsByName(uID, name, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
+@app.route('/getDocumentsByName')
+@authlib.authDec('verify_token')  # TODO change
+@GetArgs(RequestErrorHandler)
+def getDocumentsByName(uID, name, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start <= end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.GetDocsByName(uID, name, start=start, end=end):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
