@@ -48,8 +48,8 @@ def SearchDocsByDocID(uID, docID, start=0, end=50):
 
 def SearchDocsBySubject(uID, subject, start=0, end=50):
     if end == 0:
-        return Document.objects(subject__icontains=subject)
-    return Document.objects(subject__icontains=subject)[start:end]
+        return Document.objects(subject__iexact=subject)
+    return Document.objects(subject__iexact=subject)[start:end]
 
 
 def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
