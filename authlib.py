@@ -235,7 +235,7 @@ def doc_write(docID=None, uID=None, token=None):
                             }
                     return {
                         'code': -400,
-                        'message': 'You do not have the right to access this document.'
+                        'message': 'You do not have the right to make changes to this document.'
                     }
     return {
         'code': -301,
