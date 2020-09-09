@@ -13,6 +13,7 @@ import json
 import time
 import secrets
 import authlib
+import filestore
 
 # Initialize app
 app = Flask(__name__)
@@ -29,8 +30,6 @@ db.init_app(app)
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
                       'docx', 'xls', 'xlsx', 'ppt', 'pptx']
-FILESTORAGE = '/etc/docx/fs'
-# FILESTORAGE = "C:\\Temp\\"
 
 
 def RequestErrorHandler(func, code, missing):
@@ -95,7 +94,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     filename = secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
-    f.save(os.path.join(FILESTORAGE, docID))
+    f.save(filestore.newStorageLocation(docID))
     return jsonify({
         'code': rst,
         'docID': docID
@@ -116,7 +115,10 @@ def shareDocument(uID, targetUID, docID, read='true', write='false'):
                 if str(d.policies[x].uID).lower() == targetUID.lower():
                     d.policies.pop(x)
 
-            d.policies.append(Policy(uID=targetUID, read=read, write=write))
+            if read or write:
+                d.policies.append(
+                    Policy(uID=targetUID, read=read, write=write))
+
             d.save()
             return jsonify({
                 'code': 0,
@@ -146,7 +148,7 @@ def getDocuments(uID=None, status='active', start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -194,7 +196,7 @@ def searchDocumentsByID(uID, docID, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -211,15 +213,17 @@ def searchDocumentsByID(uID, docID, start='0', end='50'):
         'result': r
     })
 
+
 @app.route('/getHashTags')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def getHashTags(uID):
     r = core.GetUserHashTags(uID)
     return jsonify({
-        'code':0,
-        'result':r
+        'code': 0,
+        'result': r
     })
+
 
 @app.route('/searchDocumentsByHashTag')
 @authlib.authDec('verify_token')
@@ -228,7 +232,7 @@ def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -245,6 +249,30 @@ def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
         'result': r
     })
 
+@app.route('/getDocumentsByHashTag')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def getDocumentsByHashTag(uID, hashTag, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start <= end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.GetDocsByHashTag(uID, hashTag, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
 
 @app.route('/searchDocumentsBySubject')
 @authlib.authDec('verify_token')  # TODO change
@@ -253,7 +281,7 @@ def searchDocumentsBySubject(uID, subject, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -270,6 +298,30 @@ def searchDocumentsBySubject(uID, subject, start='0', end='50'):
         'result': r
     })
 
+@app.route('/getDocumentsBySubject')
+@authlib.authDec('verify_token')  # TODO change
+@GetArgs(RequestErrorHandler)
+def getDocumentsBySubject(uID, subject, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start <= end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.GetDocsBySubject(uID, subject, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
 
 @app.route('/searchDocumentsByName')
 @authlib.authDec('verify_token')  # TODO change
@@ -278,7 +330,7 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
-        assert start<=end
+        assert start <= end
     except:
         return jsonify({
             'code': -1,
@@ -295,13 +347,37 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
         'result': r
     })
 
+@app.route('/getDocumentsByName')
+@authlib.authDec('verify_token')  # TODO change
+@GetArgs(RequestErrorHandler)
+def getDocumentsByName(uID, name, start='0', end='50'):
+    try:
+        start = int(start)
+        end = int(end)
+        assert start <= end
+    except:
+        return jsonify({
+            'code': -1,
+            'message': 'Invalid start / end'
+        })
+
+    r = []
+    for x in core.GetDocsByName(uID, name, start=start, end=end):
+        Q = dict(x.to_mongo())
+        Q.pop('_id')
+        r.append(Q)
+    return jsonify({
+        'code': 0,
+        'result': r
+    })
+
 
 @app.route('/deleteDocumentByID')
 @authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
 def deleteDocumentByID(docID):
-    if os.path.exists(os.path.join(FILESTORAGE, docID)) and os.path.isfile(os.path.join(FILESTORAGE, docID)):
-        os.remove(os.path.join(FILESTORAGE, docID))
+    if os.path.exists(filestore.getStorageLocation(docID)) and os.path.isfile(filestore.getStorageLocation(docID)):
+        os.remove(filestore.getStorageLocation(docID))
     return jsonify({
         'code': 0,
         'result': core.DeleteDocs(docID)
@@ -380,8 +456,11 @@ def editDocumentByID(docID, properties, elToken=None):
 
     if 'docID' in properties:
         try:
-            os.rename(os.path.join(FILESTORAGE, docID),
-                      os.path.join(FILESTORAGE, properties['docID']))
+            if filestore.getStorageLocation(docID):
+                os.rename(filestore.getStorageLocation(docID),
+                          filestore.newStorageLocation(properties['docID']))
+            else:
+                raise Exception('Could not save the file')
         except:
             return GeneralErrorHandler(-1, 'Failed to move the file')
 
@@ -391,8 +470,7 @@ def editDocumentByID(docID, properties, elToken=None):
         if 'docID' in properties:
             try:
                 # Rollback
-                os.rename(os.path.join(FILESTORAGE, properties['docID']), os.path.join(
-                    FILESTORAGE, docID))
+                os.rename(filestore.getStorageLocation(properties['docID']), filestore.newStorageLocation(docID))
             except:
                 pass
 
@@ -409,7 +487,7 @@ def editDocumentByID(docID, properties, elToken=None):
 @GetArgs(RequestErrorHandler)
 def GetFile(auth=None, path=None, docID=None):
     if core.ValidatePermission(docID, auth):
-        return send_file(os.path.join(FILESTORAGE, docID))
+        return send_file(filestore.getStorageLocation(docID))
     return GeneralErrorHandler(-400, 'Access is denied'), 403
 
 

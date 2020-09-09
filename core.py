@@ -28,7 +28,7 @@ def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Re
 
 
 def GetDocByDocID(docID):
-    return Document.objects(docID=docID).first()
+    return Document.objects(docID__iexact=docID).first()
 
 
 def GetUserHashTags(uID):
@@ -41,20 +41,42 @@ def GetUserHashTags(uID):
 
 
 def SearchDocsByDocID(uID, docID, start=0, end=50):
+    if end == 0:
+        return Document.objects(docID__icontains=docID)
     return Document.objects(docID__icontains=docID)[start:end]
 
 
 def SearchDocsBySubject(uID, subject, start=0, end=50):
+    if end == 0:
+        return Document.objects(subject__icontains=subject)
     return Document.objects(subject__icontains=subject)[start:end]
 
 
 def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
-    return Document.objects(hashTags__iexact=hashTag)[start:end]
-
+    if end == 0:
+        return Document.objects(hashTags__icontains=hashTag)
+    return Document.objects(hashTags__icontains=hashTag)[start:end]
 
 def SearchDocsByName(uID, name, start=0, end=50):
+    if end == 0:
+        return Document.objects(name__icontains=name)
     return Document.objects(name__icontains=name)[start:end]
 
+def GetDocsBySubject(uID, subject, start=0, end=50):
+    if end == 0:
+        return Document.objects(subject__iexact=subject)
+    return Document.objects(subject__iexact=subject)[start:end]
+
+
+def GetDocsByHashTag(uID, hashTag, start=0, end=50):
+    if end == 0:
+        return Document.objects(hashTags__iexact=hashTag)
+    return Document.objects(hashTags__iexact=hashTag)[start:end]
+
+def GetDocsByName(uID, name, start=0, end=50):
+    if end == 0:
+        return Document.objects(name__iexact=name)
+    return Document.objects(name__iexact=name)[start:end]
 
 def GetTokenMaxAge(uID=None):
     if uID:
