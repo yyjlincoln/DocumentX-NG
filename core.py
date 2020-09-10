@@ -42,41 +42,45 @@ def GetUserHashTags(uID):
 
 def SearchDocsByDocID(uID, docID, start=0, end=50):
     if end == 0:
-        return Document.objects(docID__icontains=docID)
-    return Document.objects(docID__icontains=docID)[start:end]
+        return Document.objects(Q(docID__icontains=docID) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(docID__icontains=docID) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
 
 
 def SearchDocsBySubject(uID, subject, start=0, end=50):
     if end == 0:
-        return Document.objects(subject__icontains=subject)
-    return Document.objects(subject__icontains=subject)[start:end]
+        return Document.objects(Q(subject__icontains=subject) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(subject__icontains=subject) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
 
 
 def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
     if end == 0:
-        return Document.objects(hashTags__icontains=hashTag)
-    return Document.objects(hashTags__icontains=hashTag)[start:end]
+        return Document.objects(Q(hashTags__icontains=hashTag) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(hashTags__icontains=hashTag) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
+
 
 def SearchDocsByName(uID, name, start=0, end=50):
     if end == 0:
-        return Document.objects(name__icontains=name)
-    return Document.objects(name__icontains=name)[start:end]
+        return Document.objects(Q(name__icontains=name) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(name__icontains=name) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
+
 
 def GetDocsBySubject(uID, subject, start=0, end=50):
     if end == 0:
-        return Document.objects(subject__iexact=subject)
-    return Document.objects(subject__iexact=subject)[start:end]
+        return Document.objects(Q(subject__iexact=subject) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(subject__iexact=subject) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
 
 
 def GetDocsByHashTag(uID, hashTag, start=0, end=50):
     if end == 0:
-        return Document.objects(hashTags__iexact=hashTag)
-    return Document.objects(hashTags__iexact=hashTag)[start:end]
+        return Document.objects(Q(hashTags__iexact=hashTag) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(hashTags__iexact=hashTag) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
+
 
 def GetDocsByName(uID, name, start=0, end=50):
     if end == 0:
-        return Document.objects(name__iexact=name)
-    return Document.objects(name__iexact=name)[start:end]
+        return Document.objects(Q(name__iexact=name) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))
+    return Document.objects(Q(name__iexact=name) & (Q(docID__owner=uID) | Q(policies__uID__iexact=uID)))[start:end]
+
 
 def GetTokenMaxAge(uID=None):
     if uID:
