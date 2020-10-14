@@ -647,7 +647,7 @@ def getDocumentsByResourceGroup(uID, resID):
     })
 
 
-@app.route('/addDocumentsToResourceGroup')
+@app.route('/addDocumentToResourceGroup')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def addDocumentsToResourceGroup(uID, resID, docID):
@@ -662,7 +662,7 @@ def addDocumentsToResourceGroup(uID, resID, docID):
         'message':'Failed to add document.'
     })
 
-@app.route('/removeDocumentsToResourceGroup')
+@app.route('/removeDocumentFromResourceGroup')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def removeDocumentsToResourceGroup(uID, resID, docID):
