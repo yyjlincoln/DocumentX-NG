@@ -37,3 +37,8 @@ class Document(me.Document):
     accessLevel = me.StringField(default='private')  # private or public
     archived = me.BooleanField(default=False)
     hashTags = me.ListField(me.StringField(),default=[])
+    resourceGroup = me.ListField(me.StringField(), default = [])
+
+class ResourceGroup(me.Document):
+    resid = me.StringField(unique = True)
+    resName = me.StringField()
