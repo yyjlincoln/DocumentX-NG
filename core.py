@@ -277,7 +277,7 @@ def EditResourceGroupByID(uID, resID, properties):
     return False
 
 def GetResourceGroups(uID):
-    return ResourceGroup(uID__iexact = uID)
+    return ResourceGroup.objects(uID__iexact = uID)
 
 def GetDocumentsByResourceGroup(uID, resID):
     r = GetResourceGroupByID(uID, resID)
