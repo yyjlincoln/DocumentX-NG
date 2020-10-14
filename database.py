@@ -13,6 +13,7 @@ class Policy(me.EmbeddedDocument):
     read = me.BooleanField(default=True)
     write = me.BooleanField(default=False)
 
+
 class User(me.Document):
     name = me.StringField(required=True)
     uID = me.StringField(required=True, unique=True)
@@ -22,6 +23,7 @@ class User(me.Document):
     currentTokens = me.EmbeddedDocumentListField(Token, default=[])
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     tokenMaxAge = me.FloatField()
+
 
 class Document(me.Document):
     name = me.StringField(required=True)
@@ -36,10 +38,11 @@ class Document(me.Document):
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     accessLevel = me.StringField(default='private')  # private or public
     archived = me.BooleanField(default=False)
-    hashTags = me.ListField(me.StringField(),default=[])
-    resourceGroup = me.ListField(me.StringField(), default = [])
+    hashTags = me.ListField(me.StringField(), default=[])
+
 
 class ResourceGroup(me.Document):
     resID = me.StringField()
     name = me.StringField()
     uID = me.StringField()
+    documents = me.ListField(me.StringField(), default=[])

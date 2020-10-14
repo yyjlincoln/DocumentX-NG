@@ -275,3 +275,39 @@ def EditResourceGroupByID(uID, resID, properties):
         except:
             return False
     return False
+
+def GetResourceGroups(uID):
+    return ResourceGroup(uID__iexact = uID)
+
+def GetDocumentsByResourceGroup(uID, resID):
+    r = GetResourceGroupByID(uID, resID)
+    if r:
+        return r.documents
+    return []
+
+def AddDocumentToResourceGroup(uID, resID, docID):
+    r = GetResourceGroupByID(uID, resID)
+    if r:
+        if docID not in r.documents:
+            try:
+                r.documents.append(docID)
+                r.save()
+                return True
+            except:
+                return False
+        else:
+            return True
+    return False
+
+def RemoveDocumentFromResourceGroup(uID, resID, docID):
+    r = GetResourceGroupByID(uID, resID)
+    if r:
+        if docID not in r.documents:
+            return True
+        else:
+            try:
+                r.documents.remove(docID)
+                r.save()
+                return True
+            except:
+                return False

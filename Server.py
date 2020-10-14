@@ -619,3 +619,52 @@ def EditResourceGroupByID(uID, resID, properties):
         'message':'Failed to update the resource group.'
     })
 
+@app.route('/getResourceGroups')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def getResourceGroups(uID):
+    return jsonify({
+        'code':0,
+        'resourceGroups':core.GetResourceGroups(uID)
+    })
+
+@app.route('/getDocumentsByResourceGroup')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def getDocumentsByResourceGroup(uID, resID):
+    return jsonify({
+        'code':0,
+        'documents':core.GetDocumentsByResourceGroup(uID, resID)
+    })
+
+
+@app.route('/addDocumentsToResourceGroup')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def addDocumentsToResourceGroup(uID, resID, docID):
+    r = core.AddDocumentToResourceGroup(uID, resID, docID)
+    if r:
+        return jsonify({
+            'code':0,
+            'message':'Success'
+        })
+    return jsonify({
+        'code':-1,
+        'message':'Failed to add document.'
+    })
+
+@app.route('/removeDocumentsToResourceGroup')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def removeDocumentsToResourceGroup(uID, resID, docID):
+    r = core.RemoveDocumentFromResourceGroup(uID, resID, docID)
+    if r:
+        return jsonify({
+            'code':0,
+            'message':'Success'
+        })
+    return jsonify({
+        'code':-1,
+        'message':'Failed to remove document.'
+    })
+
