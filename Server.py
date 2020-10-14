@@ -623,9 +623,18 @@ def EditResourceGroupByID(uID, resID, properties):
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def getResourceGroups(uID):
+    r = core.GetResourceGroups(uID)
+    rp = []
+    for resg in r:
+        rp.append({
+            'documents':resg['documents'],
+            'name':resg['name'],
+            'resID':resg['resID'],
+            'uID':resg['uID']
+        })
     return jsonify({
         'code':0,
-        'resourceGroups':core.GetResourceGroups(uID)
+        'resourceGroups':rp
     })
 
 @app.route('/getDocumentsByResourceGroup')
