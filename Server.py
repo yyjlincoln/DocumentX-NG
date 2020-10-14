@@ -566,19 +566,21 @@ def GetResourceGroupByID(uID, resID):
         'message': f'ResourceGroup "{str(resID)}" does not exist.'
     }
 
+
 @app.route('/newResourceGroup')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def NewResourceGroup(uID, resID, name):
-    if core.NewResourceGroup(uID = uID, resID = resID, name = name):
+    if core.NewResourceGroup(uID=uID, resID=resID, name=name):
         return jsonify({
-            'code':0,
-            'message':f'Successfully added resource group "{name}"({resID}) for user {uID}".'
+            'code': 0,
+            'message': f'Successfully added resource group "{name}"({resID}) for user {uID}".'
         })
     return jsonify({
-        'code':-1,
-        'message':'Could not add this new resource group.'
+        'code': -1,
+        'message': 'Could not add this new resource group.'
     })
+
 
 @app.route('/deleteResourceGroupByID')
 @authlib.authDec('verify_token')
@@ -587,18 +589,19 @@ def DeleteResourceGroupByID(uID, resID):
     if not core.GetResourceGroupByID(uID, resID):
         # Resource Group does not exist!
         return jsonify({
-            'code':0,
-            'message':'Resource Group does not exist! You don\'t have to delete it.'
+            'code': 0,
+            'message': 'Resource Group does not exist! You don\'t have to delete it.'
         })
     if core.DeleteResourceGroupByID(uID, resID):
         return jsonify({
-            'code':0,
-            'message':'Successfully deleted resource group.'
+            'code': 0,
+            'message': 'Successfully deleted resource group.'
         })
     return jsonify({
-        'code':-1,
-        'message':'Failed to delete this resource group.'
+        'code': -1,
+        'message': 'Failed to delete this resource group.'
     })
+
 
 @app.route('/editResourceGroupByID')
 @authlib.authDec('verify_token')
@@ -606,18 +609,19 @@ def DeleteResourceGroupByID(uID, resID):
 def EditResourceGroupByID(uID, resID, properties):
     if not isinstance(properties, dict):
         return jsonify({
-            'code':-1,
-            'message':'Properties should be a dict.'
+            'code': -1,
+            'message': 'Properties should be a dict.'
         })
     if core.EditResourceGroupByID(uID, resID, properties):
         return jsonify({
-            'code':0,
-            'message':'Successfully updated resource group.'
+            'code': 0,
+            'message': 'Successfully updated resource group.'
         })
     return jsonify({
-        'code':-1,
-        'message':'Failed to update the resource group.'
+        'code': -1,
+        'message': 'Failed to update the resource group.'
     })
+
 
 @app.route('/getResourceGroups')
 @authlib.authDec('verify_token')
@@ -627,23 +631,24 @@ def getResourceGroups(uID):
     rp = []
     for resg in r:
         rp.append({
-            'documents':resg['documents'],
-            'name':resg['name'],
-            'resID':resg['resID'],
-            'uID':resg['uID']
+            'documents': resg['documents'],
+            'name': resg['name'],
+            'resID': resg['resID'],
+            'uID': resg['uID']
         })
     return jsonify({
-        'code':0,
-        'resourceGroups':rp
+        'code': 0,
+        'resourceGroups': rp
     })
+
 
 @app.route('/getDocumentsByResourceGroup')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def getDocumentsByResourceGroup(uID, resID):
     return jsonify({
-        'code':0,
-        'documents':core.GetDocumentsByResourceGroup(uID, resID)
+        'code': 0,
+        'documents': core.GetDocumentsByResourceGroup(uID, resID)
     })
 
 
@@ -651,29 +656,46 @@ def getDocumentsByResourceGroup(uID, resID):
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def addDocumentsToResourceGroup(uID, resID, docID):
+    # Check if resGroup exists
+    if not core.GetResourceGroupByID(uID, resID):
+        return jsonify({
+            'code': -303,
+            'message': 'Resource group does not exist'
+        })
+    if not core.GetDocByDocID(docID):
+        return jsonify({
+            'code': -301,
+            'message': 'Document does not exist!'
+        })
+        
     r = core.AddDocumentToResourceGroup(uID, resID, docID)
     if r:
         return jsonify({
-            'code':0,
-            'message':'Success'
+            'code': 0,
+            'message': 'Success'
         })
     return jsonify({
-        'code':-1,
-        'message':'Failed to add document.'
+        'code': -1,
+        'message': 'Failed to add document.'
     })
+
 
 @app.route('/removeDocumentFromResourceGroup')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def removeDocumentsToResourceGroup(uID, resID, docID):
+    if not core.GetResourceGroupByID(uID, resID):
+        return jsonify({
+            'code': -303,
+            'message': 'Resource group does not exist'
+        })
     r = core.RemoveDocumentFromResourceGroup(uID, resID, docID)
     if r:
         return jsonify({
-            'code':0,
-            'message':'Success'
+            'code': 0,
+            'message': 'Success'
         })
     return jsonify({
-        'code':-1,
-        'message':'Failed to remove document.'
+        'code': -1,
+        'message': 'Failed to remove document.'
     })
-
