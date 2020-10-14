@@ -242,7 +242,7 @@ def GetResourceGroupByID(uID, resID):
 
 
 def DeleteResourceGroupByID(uID, resID):
-    r = GetResourceGroupByID(uID__iexact=uID, resID__iexact=resID)
+    r = GetResourceGroupByID(uID, resID)
     if r:
         try:
             r.delete()
