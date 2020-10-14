@@ -1,4 +1,4 @@
-from database import Document, me, User, Token
+from database import Document, me, User, Token, ResourceGroup
 import time
 import random
 import hashlib
@@ -58,10 +58,12 @@ def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
     return Document.objects(Q(hashTags__icontains=hashTag) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))[start:end]
 
 
+
 def SearchDocsByName(uID, name, start=0, end=50):
     if end == 0:
         return Document.objects(Q(name__icontains=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))
     return Document.objects(Q(name__icontains=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))[start:end]
+
 
 
 def GetDocsBySubject(uID, subject, start=0, end=50):
@@ -76,10 +78,12 @@ def GetDocsByHashTag(uID, hashTag, start=0, end=50):
     return Document.objects(Q(hashTags__iexact=hashTag) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))[start:end]
 
 
+
 def GetDocsByName(uID, name, start=0, end=50):
     if end == 0:
         return Document.objects(Q(name__iexact=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))
     return Document.objects(Q(name__iexact=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))[start:end]
+
 
 
 def GetTokenMaxAge(uID=None):
@@ -230,4 +234,44 @@ def ValidatePermission(docID, auth):
         if auth in Auths[docID]:
             Auths[docID].pop(auth)
             return True
+    return False
+
+
+def GetResourceGroupByID(uID, resID):
+    return ResourceGroup.objects(uID__iexact=uID, resID__iexact=resID).first()
+
+
+def DeleteResourceGroupByID(uID, resID):
+    r = GetResourceGroupByID(uID__iexact=uID, resID__iexact=resID)
+    if r:
+        try:
+            r.delete()
+            return True
+        except:
+            return False
+    return False
+
+
+def NewResourceGroup(uID, resID, name):
+    if GetResourceGroupByID(uID, resID):
+        return False
+
+    try:
+        r = ResourceGroup(uID=uID, resID=resID, name=name)
+        r.save()
+        return True
+    except:
+        return False
+
+
+def EditResourceGroupByID(uID, resID, properties):
+    r = GetResourceGroupByID(uID, resID)
+    if r:
+        try:
+            for prop in properties:
+                setattr(r, prop, properties[prop])
+            r.save()
+            return True
+        except:
+            return False
     return False

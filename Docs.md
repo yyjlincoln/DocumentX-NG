@@ -7,6 +7,7 @@
 | -300       | Document already exists                                                 |
 | -301       | Document does not exist                                                 |
 | -302       | Failed to save to the database                                          |
+| -303       | Resource Group does not exist.                                          |
 | -400       | Permission Error                                                        |
 | -401       | Sign in is required                                                     |
 | -402       | Authentication could not be completed because argument x does not exist |

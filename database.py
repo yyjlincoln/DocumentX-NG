@@ -40,5 +40,6 @@ class Document(me.Document):
     resourceGroup = me.ListField(me.StringField(), default = [])
 
 class ResourceGroup(me.Document):
-    resid = me.StringField(unique = True)
-    resName = me.StringField()
+    resID = me.StringField()
+    name = me.StringField()
+    uID = me.StringField()
