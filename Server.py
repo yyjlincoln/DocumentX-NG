@@ -642,7 +642,8 @@ def getResourceGroups(uID):
             'documents': resg['documents'],
             'name': resg['name'],
             'resID': resg['resID'],
-            'uID': resg['uID']
+            'uID': resg['uID'],
+            'priority':resg['priority']
         })
     return jsonify({
         'code': 0,
