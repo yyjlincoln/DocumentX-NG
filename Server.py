@@ -607,6 +607,14 @@ def DeleteResourceGroupByID(uID, resID):
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
 def EditResourceGroupByID(uID, resID, properties):
+    try:
+        properties = json.loads(properties)
+    except json.JSONDecodeError:
+        return jsonify({
+            'code':-1,
+            'message':'JSON Decode Failed.'
+        })
+
     if not isinstance(properties, dict):
         return jsonify({
             'code': -1,

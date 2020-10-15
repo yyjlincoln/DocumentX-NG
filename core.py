@@ -268,11 +268,6 @@ def EditResourceGroupByID(uID, resID, properties):
     r = GetResourceGroupByID(uID, resID)
     if r:
         try:
-            if 'priority' in properties:
-                try:
-                    properties['priority'] = float(properties['priority'])
-                except:
-                    return False
             for prop in properties:
                 setattr(r, prop, properties[prop])
             r.save()
