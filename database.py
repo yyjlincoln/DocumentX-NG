@@ -46,3 +46,4 @@ class ResourceGroup(me.Document):
     name = me.StringField()
     uID = me.StringField()
     documents = me.ListField(me.StringField(), default=[])
+    priority = me.FloatField(default=0)

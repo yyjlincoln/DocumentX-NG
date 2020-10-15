@@ -268,6 +268,11 @@ def EditResourceGroupByID(uID, resID, properties):
     r = GetResourceGroupByID(uID, resID)
     if r:
         try:
+            if 'priority' in properties:
+                try:
+                    properties['priority'] = float(properties['priority'])
+                except:
+                    return False
             for prop in properties:
                 setattr(r, prop, properties[prop])
             r.save()
@@ -277,7 +282,7 @@ def EditResourceGroupByID(uID, resID, properties):
     return False
 
 def GetResourceGroups(uID):
-    return ResourceGroup.objects(uID__iexact = uID)
+    return ResourceGroup.objects(uID__iexact = uID).order_by('-priority')
 
 def GetDocumentsByResourceGroup(uID, resID):
     r = GetResourceGroupByID(uID, resID)
