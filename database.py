@@ -40,6 +40,7 @@ class Document(me.Document):
     archived = me.BooleanField(default=False)
     hashTags = me.ListField(me.StringField(), default=[])
 
+# TODO: Remove hashTags and archived from here, and place them in DocumentProperties so that each user can store different values.
 
 class ResourceGroup(me.Document):
     resID = me.StringField()
@@ -47,3 +48,11 @@ class ResourceGroup(me.Document):
     uID = me.StringField()
     documents = me.ListField(me.StringField(), default=[])
     priority = me.FloatField(default=0)
+
+
+class DocumentProperties(me.Document):
+    uID = me.StringField(required = True)
+    docID = me.StringField(required = True)
+    location = me.StringField(required = True)
+
+# Location, hashTags 

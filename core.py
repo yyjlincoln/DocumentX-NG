@@ -1,4 +1,4 @@
-from database import Document, me, User, Token, ResourceGroup
+from database import Document, me, User, Token, ResourceGroup, DocumentProperties
 import time
 import random
 import hashlib
@@ -311,3 +311,11 @@ def RemoveDocumentFromResourceGroup(uID, resID, docID):
                 return True
             except:
                 return False
+
+def GetDocumentProperties(uID, docID):
+    r = DocumentProperties.objects(uID__iexact=uID, docID__iexact=docID).first()
+    return r
+
+def GetAllDocumentProperties(docID):
+    r = DocumentProperties.objects(docID__iexact=docID)
+    return r

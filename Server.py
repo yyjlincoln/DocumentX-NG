@@ -433,7 +433,7 @@ def getDownloadLink(docID):
 @app.route('/editDocumentByID', methods=['GET', 'POST'])
 @authlib.authDec('doc_write')
 @GetArgs(RequestErrorHandler)
-def editDocumentByID(docID, properties, elToken=None):
+def editDocumentByID(docID, properties, elToken=None, uID=None):
     doc = core.GetDocByDocID(docID)
     if not doc:
         return GeneralErrorHandler(-301, 'Document does not exist')
@@ -466,9 +466,22 @@ def editDocumentByID(docID, properties, elToken=None):
                 raise Exception('Could not save the file')
         except:
             return GeneralErrorHandler(-1, 'Failed to move the file')
+    
+        # Also, change the DocumentProperties
+        d = core.GetAllDocumentProperties(docID=docID)
+        for x in d:
+            try:
+                x.docID = properties['docID']
+            except:
+                print('Warn: Could not change docID in DocumentProperties.')
 
     try:
         doc.save()
+        try:
+            for x in d:
+                x.save()
+        except:
+            print('Warn: Could not save changed DocumentProperties.')
     except:
         if 'docID' in properties:
             try:
