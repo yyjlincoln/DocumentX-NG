@@ -136,7 +136,7 @@ def GetUserToken(uID, tokenMaxAge=None):
     u = GetUserByID(uID)
     if u:
         t = Token(created=time.time(), token=secrets.token_urlsafe(),
-                  expires=time.time()+GetTokenMaxAge(uID) if tokenMaxAge == None else tokenMaxAge)
+                  expires=time.time()+GetTokenMaxAge(uID) if tokenMaxAge == None else time.time()+tokenMaxAge)
         u.currentTokens.append(t)
 
         ct = 0
