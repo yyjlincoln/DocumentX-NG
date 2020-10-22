@@ -313,5 +313,6 @@ levels = {
     'doc_write': [rolecheck, doc_write],
     'verify_token': [v_token],
     'login': [_password],
-    'verify_upload': [rolecheck, v_token, v_upload_permissions]
+    'verify_upload': [rolecheck, v_token, v_upload_permissions],
+    'elevated':[_password, v_token]
 }

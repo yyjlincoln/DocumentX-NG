@@ -58,12 +58,10 @@ def SearchDocsByHashTag(uID, hashTag, start=0, end=50):
     return Document.objects(Q(hashTags__icontains=hashTag) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)))[start:end].order_by('-dScanned')
 
 
-
 def SearchDocsByName(uID, name, start=0, end=50):
     if end == 0:
         return Document.objects(Q(name__icontains=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID))).order_by('-dScanned')
     return Document.objects(Q(name__icontains=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID))).order_by('-dScanned')[start:end]
-
 
 
 def GetDocsBySubject(uID, subject, start=0, end=50):
@@ -78,12 +76,10 @@ def GetDocsByHashTag(uID, hashTag, start=0, end=50):
     return Document.objects(Q(hashTags__iexact=hashTag) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID))).order_by('-dScanned')[start:end]
 
 
-
 def GetDocsByName(uID, name, start=0, end=50):
     if end == 0:
         return Document.objects(Q(name__iexact=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID))).order_by('-dScanned')
     return Document.objects(Q(name__iexact=name) & (Q(owner__iexact=uID) | Q(policies__uID__iexact=uID))).order_by('-dScanned')[start:end]
-
 
 
 def GetTokenMaxAge(uID=None):
@@ -136,11 +132,11 @@ def SetTokenMaxAge(uID, MaxAge=None):
         return None
 
 
-def GetUserToken(uID):
+def GetUserToken(uID, tokenMaxAge=None):
     u = GetUserByID(uID)
     if u:
         t = Token(created=time.time(), token=secrets.token_urlsafe(),
-                  expires=time.time()+GetTokenMaxAge(uID))
+                  expires=time.time()+GetTokenMaxAge(uID) if tokenMaxAge == None else tokenMaxAge)
         u.currentTokens.append(t)
 
         ct = 0
@@ -276,14 +272,17 @@ def EditResourceGroupByID(uID, resID, properties):
             return False
     return False
 
+
 def GetResourceGroups(uID):
-    return ResourceGroup.objects(uID__iexact = uID).order_by('-priority')
+    return ResourceGroup.objects(uID__iexact=uID).order_by('-priority')
+
 
 def GetDocumentsByResourceGroup(uID, resID):
     r = GetResourceGroupByID(uID, resID)
     if r:
         return r.documents
     return []
+
 
 def AddDocumentToResourceGroup(uID, resID, docID):
     r = GetResourceGroupByID(uID, resID)
@@ -299,6 +298,7 @@ def AddDocumentToResourceGroup(uID, resID, docID):
             return True
     return False
 
+
 def RemoveDocumentFromResourceGroup(uID, resID, docID):
     r = GetResourceGroupByID(uID, resID)
     if r:
@@ -312,9 +312,12 @@ def RemoveDocumentFromResourceGroup(uID, resID, docID):
             except:
                 return False
 
+
 def GetDocumentProperties(uID, docID):
-    r = DocumentProperties.objects(uID__iexact=uID, docID__iexact=docID).first()
+    r = DocumentProperties.objects(
+        uID__iexact=uID, docID__iexact=docID).first()
     return r
+
 
 def GetAllDocumentProperties(docID):
     r = DocumentProperties.objects(docID__iexact=docID)

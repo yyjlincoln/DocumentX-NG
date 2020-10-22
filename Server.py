@@ -721,3 +721,18 @@ def removeDocumentsToResourceGroup(uID, resID, docID):
         'code': -1,
         'message': 'Failed to remove document.'
     })
+
+
+@app.route('/newToken')
+@authlib.authDec('elevated')
+@GetArgs(RequestErrorHandler)
+def newToken(uID, maxAge = 30*3600*24):
+    try:
+        maxAge=int(maxAge)
+    except:
+        return jsonify({
+            'code':-1,
+            'message':'Invalid max age.'
+        })
+
+    return core.GetUserToken(uID, tokenMaxAge=maxAge)
