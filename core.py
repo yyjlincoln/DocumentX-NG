@@ -133,7 +133,7 @@ def SetTokenMaxAge(uID, MaxAge=None):
 
 
 def clearRemoteLogin():
-    s = RemoteLoginRequest(created__lte=time.time()-120)
+    s = RemoteLoginRequest.objects(created__lte=time.time()-120)
     for x in s:
         s.delete()
 
