@@ -781,7 +781,10 @@ def refreshRemoteLogin(rID):
         if r.auth:
             uID = r.uID
             if r.token:
-                token = r.token
+                # Instead of giving the existing token, generate a new one
+                # as this makes it easier to auth with a ltat device.
+                # token = r.token
+                token = core.GetUserToken(uID)['token']
             else:
                 # Temp token
                 token = core.GetUserToken(uID, tokenMaxAge=15)['token']
