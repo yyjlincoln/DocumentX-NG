@@ -784,7 +784,7 @@ def refreshRemoteLogin(rID):
                 token = r.token
             else:
                 # Temp token
-                token = core.GetUserToken(uID, tokenMaxAge=15)
+                token = core.GetUserToken(uID, tokenMaxAge=15)['token']
 
             r.delete()
             return jsonify({
