@@ -466,7 +466,7 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
                 raise Exception('Could not save the file')
         except:
             return GeneralErrorHandler(-1, 'Failed to move the file')
-    
+
         # Also, change the DocumentProperties
         d = core.GetAllDocumentProperties(docID=docID)
         for x in d:
@@ -624,8 +624,8 @@ def EditResourceGroupByID(uID, resID, properties):
         properties = json.loads(properties)
     except json.JSONDecodeError:
         return jsonify({
-            'code':-1,
-            'message':'JSON Decode Failed.'
+            'code': -1,
+            'message': 'JSON Decode Failed.'
         })
 
     if not isinstance(properties, dict):
@@ -656,7 +656,7 @@ def getResourceGroups(uID):
             'name': resg['name'],
             'resID': resg['resID'],
             'uID': resg['uID'],
-            'priority':resg['priority']
+            'priority': resg['priority']
         })
     return jsonify({
         'code': 0,
@@ -689,7 +689,7 @@ def addDocumentsToResourceGroup(uID, resID, docID):
             'code': -301,
             'message': 'Document does not exist!'
         })
-        
+
     r = core.AddDocumentToResourceGroup(uID, resID, docID)
     if r:
         return jsonify({
@@ -726,13 +726,69 @@ def removeDocumentsToResourceGroup(uID, resID, docID):
 @app.route('/newToken')
 @authlib.authDec('elevated')
 @GetArgs(RequestErrorHandler)
-def newToken(uID, maxAge = 30*3600*24):
+def newToken(uID, maxAge=30*3600*24):
     try:
-        maxAge=int(maxAge)
+        maxAge = int(maxAge)
     except:
         return jsonify({
-            'code':-1,
-            'message':'Invalid max age.'
+            'code': -1,
+            'message': 'Invalid max age.'
         })
 
     return core.GetUserToken(uID, tokenMaxAge=maxAge)
+
+
+@app.route('/remoteLogin')
+@GetArgs(RequestErrorHandler)
+def remoteLoginRequest():
+    r = core.NewRemoteLogin()
+    if r:
+        return jsonify({
+            'code': 0,
+            'rID': r
+        })
+    return jsonify({
+        'code': -1,
+        'message': 'Could not initiate'
+    })
+
+
+@app.route('/approveRemoteLogin')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def approveRemoteLogin(rID, uID, token):
+    r = core.ApproveRemoteLogin(rID, uID,  token)
+    if r:
+        return jsonify({
+            'code': 0,
+            'message': 'Request approved.'
+        })
+    return jsonify({
+        'code': -1,
+        'message': 'Can not approve request. Does the request exist?'
+    })
+
+
+@app.route('/refreshRemoteLogin')
+@GetArgs(RequestErrorHandler)
+def refreshRemoteLogin(rID):
+    r = core.GetRemoteLogin(rID)
+    if r:
+        if r.auth:
+            token = r.token
+            uID = r.uID
+            r.delete()
+            return jsonify({
+                'code': 0,
+                'uID': uID,
+                'token': token
+            })
+        return jsonify({
+            'code': 1,
+            'message': 'Not authenticated yet'
+        })
+    return jsonify({
+        'code': -1,
+        'message': 'Login request not found or expired.'
+    })
+

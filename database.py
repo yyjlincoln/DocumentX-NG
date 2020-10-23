@@ -42,6 +42,7 @@ class Document(me.Document):
 
 # TODO: Remove hashTags and archived from here, and place them in DocumentProperties so that each user can store different values.
 
+
 class ResourceGroup(me.Document):
     resID = me.StringField()
     name = me.StringField()
@@ -51,8 +52,15 @@ class ResourceGroup(me.Document):
 
 
 class DocumentProperties(me.Document):
-    uID = me.StringField(required = True)
-    docID = me.StringField(required = True)
-    location = me.StringField(required = True)
+    uID = me.StringField(required=True)
+    docID = me.StringField(required=True)
+    location = me.StringField(required=True)
+# Location, hashTags
 
-# Location, hashTags 
+
+class RemoteLoginRequest(me.Document):
+    rID = me.StringField(unique=True)
+    uID = me.StringField()
+    token = me.StringField()
+    created = me.FloatField()
+    auth = me.BooleanField(default=False)

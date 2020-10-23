@@ -1,4 +1,4 @@
-from database import Document, me, User, Token, ResourceGroup, DocumentProperties
+from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest
 import time
 import random
 import hashlib
@@ -130,6 +130,37 @@ def SetTokenMaxAge(uID, MaxAge=None):
         return False
     except:
         return None
+
+def NewRemoteLogin():
+    s = secrets.token_hex(32)
+    if not GetRemoteLogin(s):
+        r = RemoteLoginRequest(rID = s, created = time.time())
+        try:
+            r.save()
+        except:
+            return None
+        return s
+    else:
+        return None
+
+def GetRemoteLogin(rID):
+    return RemoteLoginRequest.objects(rID__iexact=rID).first()
+
+
+def ApproveRemoteLogin(rID, uID, token):
+    r = GetRemoteLogin(rID)
+    if r:
+        try:
+            r.token = token
+            r.uID = uID
+            r.auth = True
+            r.save()
+            return True
+        except:
+            return False
+    else:
+        return False
+
 
 
 def GetUserToken(uID, tokenMaxAge=None):
