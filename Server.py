@@ -781,7 +781,8 @@ def refreshRemoteLogin(rID):
             return jsonify({
                 'code': 0,
                 'uID': uID,
-                'token': token
+                'token': token,
+                'name':core.GetUserByID(uID).name
             })
         return jsonify({
             'code': 1,
