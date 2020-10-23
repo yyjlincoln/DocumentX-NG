@@ -756,8 +756,12 @@ def remoteLoginRequest():
 @app.route('/approveRemoteLogin')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
-def approveRemoteLogin(rID, uID, token):
-    r = core.ApproveRemoteLogin(rID, uID,  token)
+def approveRemoteLogin(rID, uID, token, tempToken = ''):
+    if tempToken:
+        r = core.ApproveRemoteLogin(rID, uID,  token='')
+    else:
+        r = core.ApproveRemoteLogin(rID, uID, token)
+
     if r:
         return jsonify({
             'code': 0,
@@ -775,14 +779,19 @@ def refreshRemoteLogin(rID):
     r = core.GetRemoteLogin(rID)
     if r:
         if r.auth:
-            token = r.token
             uID = r.uID
+            if r.token:
+                token = r.token
+            else:
+                # Temp token
+                token = core.GetUserToken(uID, tokenMaxAge=15)
+
             r.delete()
             return jsonify({
                 'code': 0,
                 'uID': uID,
                 'token': token,
-                'name':core.GetUserByID(uID).name
+                'name': core.GetUserByID(uID).name
             })
         return jsonify({
             'code': 1,
@@ -792,4 +801,3 @@ def refreshRemoteLogin(rID):
         'code': -1,
         'message': 'Login request not found or expired.'
     })
-
