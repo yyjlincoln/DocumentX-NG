@@ -131,10 +131,17 @@ def SetTokenMaxAge(uID, MaxAge=None):
     except:
         return None
 
+
+def clearRemoteLogin():
+    s = RemoteLoginRequest(created__lte=time.time()-120)
+    for x in s:
+        s.delete()
+
 def NewRemoteLogin():
     s = secrets.token_hex(32)
+    clearRemoteLogin()
     if not GetRemoteLogin(s):
-        r = RemoteLoginRequest(rID = s, created = time.time())
+        r = RemoteLoginRequest(rID=s, created=time.time())
         try:
             r.save()
         except:
@@ -142,6 +149,7 @@ def NewRemoteLogin():
         return s
     else:
         return None
+
 
 def GetRemoteLogin(rID):
     return RemoteLoginRequest.objects(rID__iexact=rID).first()
@@ -160,7 +168,6 @@ def ApproveRemoteLogin(rID, uID, token):
             return False
     else:
         return False
-
 
 
 def GetUserToken(uID, tokenMaxAge=None):
