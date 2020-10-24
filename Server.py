@@ -787,6 +787,7 @@ def rejectRemoteLogin(rID):
 @app.route('/refreshRemoteLogin')
 @GetArgs(RequestErrorHandler)
 def refreshRemoteLogin(rID):
+    core.clearRemoteLogin()
     r = core.GetRemoteLogin(rID)
     if r:
         if r.auth == 0:
