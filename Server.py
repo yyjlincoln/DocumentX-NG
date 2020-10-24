@@ -756,7 +756,7 @@ def remoteLoginRequest():
 @app.route('/approveRemoteLogin')
 @authlib.authDec('verify_token')
 @GetArgs(RequestErrorHandler)
-def approveRemoteLogin(rID, uID, token, tempToken = ''):
+def approveRemoteLogin(rID, uID, token, tempToken=''):
     if tempToken:
         r = core.ApproveRemoteLogin(rID, uID,  token='')
     else:
@@ -773,12 +773,23 @@ def approveRemoteLogin(rID, uID, token, tempToken = ''):
     })
 
 
+@app.route('/rejectRemoteLogin')
+@authlib.authDec('verify_token')
+@GetArgs(RequestErrorHandler)
+def rejectRemoteLogin(rID):
+    core.RejectRemoteLogin(rID)
+    return jsonify({
+        'code': 0,
+        'message': 'Request rejected.'
+    })
+
+
 @app.route('/refreshRemoteLogin')
 @GetArgs(RequestErrorHandler)
 def refreshRemoteLogin(rID):
     r = core.GetRemoteLogin(rID)
     if r:
-        if r.auth:
+        if r.auth == 0:
             uID = r.uID
             if r.token:
                 # Instead of giving the existing token, generate a new one
@@ -797,10 +808,26 @@ def refreshRemoteLogin(rID):
                 'name': core.GetUserByID(uID).name
             })
         return jsonify({
-            'code': 1,
+            'code': r.auth,
             'message': 'Not authenticated yet'
         })
     return jsonify({
         'code': -1,
         'message': 'Login request not found or expired.'
+    })
+
+@app.route('/validateRemoteLogin')
+@GetArgs(RequestErrorHandler)
+def validateRemoteLogin(rID):
+    r =  core.GetRemoteLogin(rID)
+    if r:
+        r.auth = 2
+        r.save()
+        return jsonify({
+            'code':0,
+            'message':'Request exist.'
+        })
+    return jsonify({
+        'code':-1,
+        'message':'Request does not exist!'
     })

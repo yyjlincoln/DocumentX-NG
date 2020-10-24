@@ -161,8 +161,19 @@ def ApproveRemoteLogin(rID, uID, token):
         try:
             r.token = token
             r.uID = uID
-            r.auth = True
+            r.auth = 0
             r.save()
+            return True
+        except:
+            return False
+    else:
+        return False
+
+def RejectRemoteLogin(rID):
+    r = GetRemoteLogin(rID)
+    if r:
+        try:
+            r.delete()
             return True
         except:
             return False
