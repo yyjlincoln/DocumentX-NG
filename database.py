@@ -63,7 +63,7 @@ class RemoteLoginRequest(me.Document):
     uID = me.StringField()
     token = me.StringField()
     created = me.FloatField()
-    auth = me.IntegerField(default=1)
+    auth = me.IntField(default=1)
     # 0 - Auth success
     # 1 - Not auth / scan yet
     # 2 - Scanned, not auth
