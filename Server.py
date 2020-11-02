@@ -3,7 +3,6 @@ from utils import GetArgs
 from flask_mongoengine import MongoEngine
 from database import Document, User, Policy
 import core
-from werkzeug.utils import secure_filename
 import os
 import qrcode
 import base64
@@ -31,6 +30,26 @@ db.init_app(app)
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
                       'docx', 'xls', 'xlsx', 'ppt', 'pptx']
 
+_windows_device_files = (
+    "CON",
+    "AUX",
+    "COM1",
+    "COM2",
+    "COM3",
+    "COM4",
+    "LPT1",
+    "LPT2",
+    "LPT3",
+    "PRN",
+    "NUL",
+)
+
+def secure_filename(name):
+    n =  "".join([c for c in name if c.isalpha() or c.isdigit() or c in ['.','_','%','!',' ']]).rstrip()
+    if n not in _windows_device_files and n!='' and n!='.':
+        return n
+    else:
+        return 'InvalidFileName.File'
 
 def RequestErrorHandler(func, code, missing):
     return jsonify({
@@ -418,7 +437,8 @@ def getDocumentAccessToken(docID):
 def getDownloadLink(docID):
     r = core.GetDocByDocID(docID)
     if r:
-        redAddr = r.fileName
+        # redAddr = r.fileName
+        redAddr = secure_filename(r.name)
         auth = core.GetAuthCode(docID)
         if auth:
             return jsonify({
