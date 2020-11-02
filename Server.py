@@ -45,6 +45,7 @@ _windows_device_files = (
 )
 
 def secure_filename(name):
+    name = name.replace('/','_')
     n =  "".join([c for c in name if c.isalpha() or c.isdigit() or c in ['.','_','%','!',' ','《','》','、','&','^','$','#']]).rstrip()
     if n not in _windows_device_files and n!='' and n!='.':
         return n
@@ -438,7 +439,7 @@ def getDownloadLink(docID):
     r = core.GetDocByDocID(docID)
     if r:
         # redAddr = r.fileName
-        redAddr = secure_filename(r.name + '.' + r.filename.rsplit('.', 1)[-1].lower())
+        redAddr = secure_filename(r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
         auth = core.GetAuthCode(docID)
         if auth:
             return jsonify({
