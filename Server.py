@@ -44,9 +44,11 @@ _windows_device_files = (
     "NUL",
 )
 
+SAFE_CHARACTERS = ['.','_','%','!',' ','《','》','、','&','^','$','#', '-','，']
+
 def secure_filename(name):
     name = name.replace('/','_')
-    n =  "".join([c for c in name if c.isalpha() or c.isdigit() or c in ['.','_','%','!',' ','《','》','、','&','^','$','#']]).rstrip()
+    n =  "".join([c for c in name if c.isalpha() or c.isdigit() or c in SAFE_CHARACTERS]).rstrip()
     if n not in _windows_device_files and n!='' and n!='.':
         return n
     else:
