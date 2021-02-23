@@ -16,7 +16,7 @@ token = ''
 
 uID = input('Please input your uID:')
 
-pHash = hashlib.md5(getpass.getpass(
+pHash = hashlib.sha256(getpass.getpass(
     'Enter password:').encode()).hexdigest()
 
 
