@@ -275,10 +275,19 @@ def GetAuthCode(docID):
 
 
 def ValidatePermission(docID, auth):
+
     if docID in Auths:
         if auth in Auths[docID]:
             Auths[docID].pop(auth)
             return True
+
+    d = GetDocByDocID(docID)
+    if d:
+        if d.accessLevel == 'public':
+            # Public Document
+            return True
+
+
     return False
 
 
