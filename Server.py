@@ -446,7 +446,7 @@ def getDownloadLink(docID):
         if auth:
             return jsonify({
                 'code': 0,
-                'link': '/secureAccess/'+redAddr+'?auth='+auth+'&docID='+docID
+                'link': '/download/'+redAddr+'?auth='+auth+'&docID='+docID
             })
         return GeneralErrorHandler(-1, 'Could not get auth.')
     else:
@@ -523,7 +523,7 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
     })
 
 
-@app.route('/secureAccess/<path:path>')
+@app.route('/download/<path:path>')
 @GetArgs(RequestErrorHandler)
 def GetFile(auth=None, path=None, docID=None):
     if core.ValidatePermission(docID, auth):
