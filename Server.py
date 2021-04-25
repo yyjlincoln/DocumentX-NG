@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, redirect, send_file, Response
-from utils import GetArgs
 from flask_mongoengine import MongoEngine
 from database import Document, User, Policy
 import core
@@ -13,6 +12,9 @@ import time
 import secrets
 import authlib
 import filestore
+from utils.AutoArguments import Arg
+from utils.RequestMapping import RequestMap
+from utils.ResponseModule import Res
 
 # Initialize app
 app = Flask(__name__)
@@ -28,7 +30,7 @@ app.config['MONGODB_SETTINGS'] = {
 db.init_app(app)
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
-                      'docx', 'xls', 'xlsx', 'ppt', 'pptx','zip','png','jpg','jpeg','heic','mp4','mp3']
+                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3']
 
 _windows_device_files = (
     "CON",
@@ -44,18 +46,22 @@ _windows_device_files = (
     "NUL",
 )
 
-SAFE_CHARACTERS = ['.','_','%','!',' ','《','》','、','&','^','$','#', '-','，']
+SAFE_CHARACTERS = ['.', '_', '%', '!', ' ',
+                   '《', '》', '、', '&', '^', '$', '#', '-', '，']
+
 
 def secure_filename(name):
-    name = name.replace('/','_')
-    n =  "".join([c for c in name if c.isalpha() or c.isdigit() or c in SAFE_CHARACTERS]).rstrip()
-    if n not in _windows_device_files and n!='' and n!='.':
+    name = name.replace('/', '_')
+    n = "".join([c for c in name if c.isalpha() or c.isdigit()
+                 or c in SAFE_CHARACTERS]).rstrip()
+    if n not in _windows_device_files and n != '' and n != '.':
         return n
     else:
         return 'InvalidFileName.File'
 
+
 def RequestErrorHandler(func, code, missing):
-    return jsonify({
+    return Res(**{
         'code': code,
         'message': 'Request failed. A valid value for '+missing+' is needed for this request.'
     })
@@ -74,37 +80,40 @@ def allowedFile(filename):
            filename.rsplit('.', 1)[-1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/setTokenMaxAge')
+rmap = RequestMap(always_pass_channel_and_fetch_values=True)
+
+
+@rmap.register_request('/setTokenMaxAge')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def setTokenMaxAge(uID, maxage):
     try:
         maxage = float(maxage)
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid maxage.'
         })
     if maxage >= 15 or maxage == 0:
         if core.SetTokenMaxAge(uID, maxage):
-            return jsonify({
+            return Res(**{
                 'code': 0,
                 'message': 'success'
             })
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Failed to set max age'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Max age must be greater than 15s.'
     })
 
 
-@app.route('/uploadDocument', methods=['POST'])
+@rmap.register_request('/uploadDocument', methods=['POST'])
 # Change to verify_permission and allow authdec to pass args to the auth handler
 @authlib.authDec('verify_upload')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', docID=None):
     if 'file' not in request.files:
         return GeneralErrorHandler(-200, 'No file is uploaded.')
@@ -117,15 +126,15 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
     f.save(filestore.newStorageLocation(docID))
-    return jsonify({
+    return Res(**{
         'code': rst,
         'docID': docID
     })
 
 
-@app.route('/share')
+@rmap.register_request('/share')
 @authlib.authDec('doc_write')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def shareDocument(uID, targetUID, docID, read='true', write='false'):
     d = core.GetDocByDocID(docID)
     read = True if read == 'true' else False
@@ -142,7 +151,7 @@ def shareDocument(uID, targetUID, docID, read='true', write='false'):
                     Policy(uID=targetUID, read=read, write=write))
 
             d.save()
-            return jsonify({
+            return Res(**{
                 'code': 0,
                 'result': {
                     'targetUID': targetUID,
@@ -152,27 +161,27 @@ def shareDocument(uID, targetUID, docID, read='true', write='false'):
             })
         except Exception as e:
             print(e)
-            return jsonify({
+            return Res(**{
                 'code': -1,
                 'message': 'Error'
             })
 
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Error'
     })
 
 
-@app.route('/getDocuments')
+@rmap.register_request('/getDocuments')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocuments(uID=None, status='active', start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -189,15 +198,15 @@ def getDocuments(uID=None, status='active', start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/getDocumentByID')
+@rmap.register_request('/getDocumentByID')
 @authlib.authDec('doc_read')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocumentByDocumentID(docID):
     r = core.GetDocByDocID(docID)
     if r:
@@ -205,22 +214,22 @@ def getDocumentByDocumentID(docID):
         r.pop('_id')
     else:
         r = {}
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/searchDocumentsByID')
+@rmap.register_request('/searchDocumentsByID')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def searchDocumentsByID(uID, docID, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -230,33 +239,33 @@ def searchDocumentsByID(uID, docID, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/getHashTags')
+@rmap.register_request('/getHashTags')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getHashTags(uID):
     r = core.GetUserHashTags(uID)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/searchDocumentsByHashTag')
+@rmap.register_request('/searchDocumentsByHashTag')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -266,22 +275,22 @@ def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/getDocumentsByHashTag')
+@rmap.register_request('/getDocumentsByHashTag')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocumentsByHashTag(uID, hashTag, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -291,22 +300,22 @@ def getDocumentsByHashTag(uID, hashTag, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/searchDocumentsBySubject')
+@rmap.register_request('/searchDocumentsBySubject')
 @authlib.authDec('verify_token')  # TODO change
-@GetArgs(RequestErrorHandler)
+@Arg()
 def searchDocumentsBySubject(uID, subject, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -316,22 +325,22 @@ def searchDocumentsBySubject(uID, subject, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/getDocumentsBySubject')
+@rmap.register_request('/getDocumentsBySubject')
 @authlib.authDec('verify_token')  # TODO change
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocumentsBySubject(uID, subject, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -341,22 +350,22 @@ def getDocumentsBySubject(uID, subject, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/searchDocumentsByName')
+@rmap.register_request('/searchDocumentsByName')
 @authlib.authDec('verify_token')  # TODO change
-@GetArgs(RequestErrorHandler)
+@Arg()
 def searchDocumentsByName(uID, name, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -366,22 +375,22 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/getDocumentsByName')
+@rmap.register_request('/getDocumentsByName')
 @authlib.authDec('verify_token')  # TODO change
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocumentsByName(uID, name, start='0', end='50'):
     try:
         start = int(start)
         end = int(end)
         assert start <= end
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid start / end'
         })
@@ -391,19 +400,19 @@ def getDocumentsByName(uID, name, start='0', end='50'):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         r.append(Q)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': r
     })
 
 
-@app.route('/deleteDocumentByID')
+@rmap.register_request('/deleteDocumentByID')
 @authlib.authDec('doc_write')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def deleteDocumentByID(docID):
     if os.path.exists(filestore.getStorageLocation(docID)) and os.path.isfile(filestore.getStorageLocation(docID)):
         os.remove(filestore.getStorageLocation(docID))
-    return jsonify({
+    return Res(**{
         'code': 0,
         'result': core.DeleteDocs(docID)
     })
@@ -411,21 +420,21 @@ def deleteDocumentByID(docID):
 # The authentication has been removed since this function has been depriciated.
 
 
-@app.route('/viewDocumentByID')
-@GetArgs(RequestErrorHandler)
+@rmap.register_request('/viewDocumentByID')
+@Arg()
 def viewDocumentByID(docID):
     return redirect('https://mcsrv.icu/view?docID='+str(docID))
 
 
-@app.route('/getDocumentAccessToken')
+@rmap.register_request('/getDocumentAccessToken')
 @authlib.authDec('document_access')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocumentAccessToken(docID):
     r = core.GetDocByDocID(docID)
     if r:
         auth = core.GetAuthCode(docID)
         if auth:
-            return jsonify({
+            return Res(**{
                 'code': 0,
                 'auth': auth
             })
@@ -434,17 +443,18 @@ def getDocumentAccessToken(docID):
         return GeneralErrorHandler(-301, 'Document does not exist')
 
 
-@app.route('/getDownloadLink')
+@rmap.register_request('/getDownloadLink')
 @authlib.authDec('document_access')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDownloadLink(docID):
     r = core.GetDocByDocID(docID)
     if r:
         # redAddr = r.fileName
-        redAddr = secure_filename(r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
+        redAddr = secure_filename(
+            r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
         auth = core.GetAuthCode(docID)
         if auth:
-            return jsonify({
+            return Res(**{
                 'code': 0,
                 'link': '/download/'+redAddr+'?auth='+auth+'&docID='+docID
             })
@@ -453,9 +463,9 @@ def getDownloadLink(docID):
         return GeneralErrorHandler(-301, 'Document does not exist')
 
 
-@app.route('/editDocumentByID', methods=['GET', 'POST'])
+@rmap.register_request('/editDocumentByID', methods=['GET', 'POST'])
 @authlib.authDec('doc_write')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def editDocumentByID(docID, properties, elToken=None, uID=None):
     doc = core.GetDocByDocID(docID)
     if not doc:
@@ -516,7 +526,7 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
 
         return GeneralErrorHandler(-302, 'Failed to save to the database.')
 
-    return jsonify({
+    return Res(**{
         'code': 0,
         'success': success,
         'failed': failed
@@ -524,15 +534,15 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
 
 
 @app.route('/download/<path:path>')
-@GetArgs(RequestErrorHandler)
-def GetFile(auth=None, path=None, docID=None):
+@Arg()
+def GetFile(docID, auth=None, path=None):
     if core.ValidatePermission(docID, auth):
         return send_file(filestore.getStorageLocation(docID))
     return GeneralErrorHandler(-400, 'Access is denied'), 403
 
 
 @app.route('/qr')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def GenerateQR(urlEncoded):
     imgByteArr = io.BytesIO()
     try:
@@ -544,9 +554,9 @@ def GenerateQR(urlEncoded):
     return Response(imgByteArr, mimetype='image/png')
 
 
-@app.route('/login', methods=['POST'])
+@rmap.register_request('/login', methods=['POST'])
 @authlib.authDec('login')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def login(uID):
     # Get name
     u = core.GetUserByID(uID)
@@ -556,7 +566,7 @@ def login(uID):
             'message': 'User does not exist'
         }
     r = core.GetUserToken(uID)
-    return jsonify({
+    return Res(**{
         'code': r['code'],
         'uID': u.uID,
         'message': r['message'],
@@ -565,13 +575,13 @@ def login(uID):
     })
 
 
-@app.route('/register', methods=['POST'])
-@GetArgs(RequestErrorHandler)
+@rmap.register_request('/register', methods=['POST'])
+@Arg()
 def register(uID, name, password):
-    return jsonify(core.NewUser(uID, name, password))
+    return Res(**core.NewUser(uID, name, password))
 
 
-@app.route('/getAuthStatus')
+@rmap.register_request('/getAuthStatus')
 @authlib.authDec('verify_token')
 def getAuthStatus():
     return {
@@ -582,13 +592,13 @@ def getAuthStatus():
 # app.run('localhost',port=80)
 
 
-@app.route('/getResourceGroupByID')
+@rmap.register_request('/getResourceGroupByID')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def GetResourceGroupByID(uID, resID):
     r = core.GetResourceGroupByID(uID, resID)
     if r:
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Successfully obtained resource group info.',
             'resourceGroup': {
@@ -603,73 +613,73 @@ def GetResourceGroupByID(uID, resID):
     }
 
 
-@app.route('/newResourceGroup')
+@rmap.register_request('/newResourceGroup')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def NewResourceGroup(uID, resID, name):
     if core.NewResourceGroup(uID=uID, resID=resID, name=name):
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': f'Successfully added resource group "{name}"({resID}) for user {uID}".'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Could not add this new resource group.'
     })
 
 
-@app.route('/deleteResourceGroupByID')
+@rmap.register_request('/deleteResourceGroupByID')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def DeleteResourceGroupByID(uID, resID):
     if not core.GetResourceGroupByID(uID, resID):
         # Resource Group does not exist!
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Resource Group does not exist! You don\'t have to delete it.'
         })
     if core.DeleteResourceGroupByID(uID, resID):
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Successfully deleted resource group.'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Failed to delete this resource group.'
     })
 
 
-@app.route('/editResourceGroupByID')
+@rmap.register_request('/editResourceGroupByID')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def EditResourceGroupByID(uID, resID, properties):
     try:
         properties = json.loads(properties)
     except json.JSONDecodeError:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'JSON Decode Failed.'
         })
 
     if not isinstance(properties, dict):
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Properties should be a dict.'
         })
     if core.EditResourceGroupByID(uID, resID, properties):
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Successfully updated resource group.'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Failed to update the resource group.'
     })
 
 
-@app.route('/getResourceGroups')
+@rmap.register_request('/getResourceGroups')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getResourceGroups(uID):
     r = core.GetResourceGroups(uID)
     rp = []
@@ -681,79 +691,79 @@ def getResourceGroups(uID):
             'uID': resg['uID'],
             'priority': resg['priority']
         })
-    return jsonify({
+    return Res(**{
         'code': 0,
         'resourceGroups': rp
     })
 
 
-@app.route('/getDocumentsByResourceGroup')
+@rmap.register_request('/getDocumentsByResourceGroup')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def getDocumentsByResourceGroup(uID, resID):
-    return jsonify({
+    return Res(**{
         'code': 0,
         'documents': core.GetDocumentsByResourceGroup(uID, resID)
     })
 
 
-@app.route('/addDocumentToResourceGroup')
+@rmap.register_request('/addDocumentToResourceGroup')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def addDocumentsToResourceGroup(uID, resID, docID):
     # Check if resGroup exists
     if not core.GetResourceGroupByID(uID, resID):
-        return jsonify({
+        return Res(**{
             'code': -303,
             'message': 'Resource group does not exist'
         })
     if not core.GetDocByDocID(docID):
-        return jsonify({
+        return Res(**{
             'code': -301,
             'message': 'Document does not exist!'
         })
 
     r = core.AddDocumentToResourceGroup(uID, resID, docID)
     if r:
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Success'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Failed to add document.'
     })
 
 
-@app.route('/removeDocumentFromResourceGroup')
+@rmap.register_request('/removeDocumentFromResourceGroup')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def removeDocumentsToResourceGroup(uID, resID, docID):
     if not core.GetResourceGroupByID(uID, resID):
-        return jsonify({
+        return Res(**{
             'code': -303,
             'message': 'Resource group does not exist'
         })
     r = core.RemoveDocumentFromResourceGroup(uID, resID, docID)
     if r:
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Success'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Failed to remove document.'
     })
 
 
-@app.route('/newToken')
+@rmap.register_request('/newToken')
 @authlib.authDec('elevated')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def newToken(uID, maxAge=30*3600*24):
     try:
         maxAge = int(maxAge)
     except:
-        return jsonify({
+        return Res(**{
             'code': -1,
             'message': 'Invalid max age.'
         })
@@ -761,24 +771,24 @@ def newToken(uID, maxAge=30*3600*24):
     return core.GetUserToken(uID, tokenMaxAge=maxAge)
 
 
-@app.route('/remoteLogin')
-@GetArgs(RequestErrorHandler)
+@rmap.register_request('/remoteLogin')
+@Arg()
 def remoteLoginRequest():
     r = core.NewRemoteLogin()
     if r:
-        return jsonify({
+        return Res(**{
             'code': 0,
             'rID': r
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Could not initiate'
     })
 
 
-@app.route('/approveRemoteLogin')
+@rmap.register_request('/approveRemoteLogin')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def approveRemoteLogin(rID, uID, token, tempToken=''):
     if tempToken:
         r = core.ApproveRemoteLogin(rID, uID,  token='')
@@ -786,29 +796,29 @@ def approveRemoteLogin(rID, uID, token, tempToken=''):
         r = core.ApproveRemoteLogin(rID, uID, token)
 
     if r:
-        return jsonify({
+        return Res(**{
             'code': 0,
             'message': 'Request approved.'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Can not approve request. Does the request exist?'
     })
 
 
-@app.route('/rejectRemoteLogin')
+@rmap.register_request('/rejectRemoteLogin')
 @authlib.authDec('verify_token')
-@GetArgs(RequestErrorHandler)
+@Arg()
 def rejectRemoteLogin(rID):
     core.RejectRemoteLogin(rID)
-    return jsonify({
+    return Res(**{
         'code': 0,
         'message': 'Request rejected.'
     })
 
 
-@app.route('/refreshRemoteLogin')
-@GetArgs(RequestErrorHandler)
+@rmap.register_request('/refreshRemoteLogin')
+@Arg()
 def refreshRemoteLogin(rID):
     core.clearRemoteLogin()
     r = core.GetRemoteLogin(rID)
@@ -825,33 +835,45 @@ def refreshRemoteLogin(rID):
                 token = core.GetUserToken(uID, tokenMaxAge=15)['token']
 
             r.delete()
-            return jsonify({
+            return Res(**{
                 'code': 0,
                 'uID': uID,
                 'token': token,
                 'name': core.GetUserByID(uID).name
             })
-        return jsonify({
+        return Res(**{
             'code': r.auth,
             'message': 'Not authenticated yet'
         })
-    return jsonify({
+    return Res(**{
         'code': -1,
         'message': 'Login request not found or expired.'
     })
 
-@app.route('/validateRemoteLogin')
-@GetArgs(RequestErrorHandler)
+
+@rmap.register_request('/validateRemoteLogin')
+@Arg()
 def validateRemoteLogin(rID):
-    r =  core.GetRemoteLogin(rID)
+    r = core.GetRemoteLogin(rID)
     if r:
         r.auth = 2
         r.save()
-        return jsonify({
-            'code':0,
-            'message':'Request exist.'
+        return Res(**{
+            'code': 0,
+            'message': 'Request exist.'
         })
-    return jsonify({
-        'code':-1,
-        'message':'Request does not exist!'
+    return Res(**{
+        'code': -1,
+        'message': 'Request does not exist!'
     })
+
+
+@app.route('/batch', methods=['GET', 'POST'])
+@Arg(batch=json.loads)
+def batch_request(batch):
+    return rmap.parse_batch(batch)
+
+
+rmap.handle_flask(app)
+
+app.run()

@@ -1,9 +1,48 @@
 from database import User
-from flask import request, jsonify
+from flask import jsonify, request
 import inspect
 from functools import wraps
 import core
 import time
+import logging
+from utils.ResponseModule import Res
+from utils.AutoArguments import Arg
+
+
+class JITDictionary(object):
+    '''
+    A pseudo-dictionary that overwrites its setter and getter.
+    This allows the values of the dictionary to be fetched just-in-time when the setter is called.
+    '''
+
+    def __init__(self, read_from=None, commit_changes_to=None):
+        self.read_from = read_from
+        self.commit_changes_to = commit_changes_to
+
+    def __setitem__(self, key, value) -> None:
+        if callable(self.commit_changes_to):
+            self.commit_changes_to(key, value)
+        else:
+            logging.warn('There is nowhere to commit the value!')
+            raise RuntimeError('No commit_changes_to handler is provided.')
+
+    def __getitem__(self, key):
+        if callable(self.read_from):
+            return self.read_from(key)
+        else:
+            logging.warn('There is nowhere to read any data from.')
+            raise IndexError('read_from handler had not been provided.')
+
+    def __contains__(self, key) -> bool:
+        if callable(self.read_from):
+            if self.read_from(key) == None:
+                return False
+            else:
+                return True
+        else:
+            logging.warn(
+                'IN Operator is performed while no read_from is provided.')
+            return False
 
 
 class Operation():
@@ -51,7 +90,7 @@ def _password(uID, password):
     }
 
 
-def auth(level='verify_token', **kw):
+def auth(level='verify_token', kw={}):
     # Map the level to the corresponding verifying method
     if level not in levels:
         raise Exception('Authentication method is not defined')
@@ -97,10 +136,11 @@ def authDec(level='', **kw):
     HandlerArgs = {}
 
     for _hand in levels[level]:
-        Arg = inspect.getargspec(_hand)
-        Needed = Arg.args[:-len(Arg.defaults)] if Arg.defaults else Arg.args
+        Args = inspect.getargspec(_hand)
+        Needed = Args.args[:-len(Args.defaults)
+                           ] if Args.defaults else Args.args
         Optional = dict(zip(
-            Arg.args[-len(Arg.defaults if Arg.defaults else []):], Arg.defaults if Arg.defaults else []))
+            Args.args[-len(Args.defaults if Args.defaults else []):], Args.defaults if Args.defaults else []))
         HandlerArgs[_hand] = {
             'needed': Needed,
             'optional': Optional
@@ -108,14 +148,19 @@ def authDec(level='', **kw):
 
     def decorator(func):
         @wraps(func)
-        def _i(*args, **kw):
-            funckw = dict(request.values)
+        @Arg()
+        def _i(__fetch_values, __channel, *args, **kw):
 
-            Result = auth(level=level, as_decorator=False, **funckw)
+            funckw = JITDictionary(read_from=__fetch_values)
+
+            Result = auth(level=level, kw=funckw)
             if Result['code'] == 0:
-                return func(*args, **kw)
+                # This will also pass through the __channel and __fetch_args as for the callee function:
+                # - It will invoke another GetArgs(), and those two arguments are already extracted from **kw
+                # hence it will need to be separately passed on to the callee function for GetArgs to work as expected.
+                return func(*args, __fetch_values=__fetch_values, __channel=__channel, **kw)
             else:
-                return ReturnHandler(**Result, as_decorator=True)
+                return Res(**Result)
         return _i
     return decorator
 
@@ -265,20 +310,20 @@ def v_token(uID, token):
     }
 
 
-def rolecheck(uID=None, token = None):
+def rolecheck(uID=None, token=None):
     if not uID or not token:
         return {
-            'code':0,
-            'message':'token verification failed - continue'
+            'code': 0,
+            'message': 'token verification failed - continue'
         }
     # Check login stat
     if uID and token:
         r = v_token(uID, token)
-        if r['code']!=0:
+        if r['code'] != 0:
             # Invalid login state
             return {
-                'code':0,
-                'message':'Not sudo - login verification failed'
+                'code': 0,
+                'message': 'Not sudo - login verification failed'
             }
 
         u = core.GetUserByID(uID)
@@ -293,18 +338,20 @@ def rolecheck(uID=None, token = None):
         'message': 'Sudo check - not sudo'
     }
 
+
 def v_upload_permissions(uID):
     u = core.GetUserByID(uID)
     if u:
-        if u.role != 'demo' and u.role != 'temp' and u.role!='noupload':
+        if u.role != 'demo' and u.role != 'temp' and u.role != 'noupload':
             return {
-                'code':0,
-                'message':'Upload right validation succeed'
+                'code': 0,
+                'message': 'Upload right validation succeed'
             }
     return {
         'code': -400,
         'message': 'You do not have the right to upload a document.'
-    }    
+    }
+
 
 levels = {
     # No longer allow direct download. In the future it will actually check the permission of the document.
@@ -314,5 +361,5 @@ levels = {
     'verify_token': [v_token],
     'login': [_password],
     'verify_upload': [rolecheck, v_token, v_upload_permissions],
-    'elevated':[_password, v_token]
+    'elevated': [_password, v_token]
 }
