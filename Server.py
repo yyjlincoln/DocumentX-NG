@@ -876,4 +876,4 @@ def batch_request(batch):
 
 rmap.handle_flask(app)
 
-app.run()
+
