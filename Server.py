@@ -583,6 +583,7 @@ def register(uID, name, password):
 
 @rmap.register_request('/getAuthStatus')
 @authlib.authDec('verify_token')
+@Arg()
 def getAuthStatus():
     return {
         'code': 0,
