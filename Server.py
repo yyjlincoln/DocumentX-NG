@@ -32,6 +32,15 @@ db.init_app(app)
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
                       'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3']
 
+EXTENSION_MIME = {
+    'pdf':'application/pdf',
+    'png':'image/png',
+    'docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'zip':'application/zip',
+    'mp4':'video/mp4',
+    'mp3':'audio/mpeg'
+}
+
 _windows_device_files = (
     "CON",
     "AUX",
@@ -462,6 +471,25 @@ def getDownloadLink(docID):
     else:
         return GeneralErrorHandler(-301, 'Document does not exist')
 
+@rmap.register_request('/getPreviewLink')
+@authlib.authDec('document_access')
+@Arg()
+def getPreviewLink(docID):
+    r = core.GetDocByDocID(docID)
+    if r:
+        # redAddr = r.fileName
+        redAddr = secure_filename(
+            r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
+        auth = core.GetAuthCode(docID)
+        if auth:
+            return Res(**{
+                'code': 0,
+                'link': '/preview/'+redAddr+'?auth='+auth+'&docID='+docID
+            })
+        return GeneralErrorHandler(-1, 'Could not get auth.')
+    else:
+        return GeneralErrorHandler(-301, 'Document does not exist')
+
 
 @rmap.register_request('/editDocumentByID', methods=['GET', 'POST'])
 @authlib.authDec('doc_write')
@@ -538,6 +566,18 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
 def GetFile(docID, auth=None, path=None):
     if core.ValidatePermission(docID, auth):
         return send_file(filestore.getStorageLocation(docID))
+    return GeneralErrorHandler(-400, 'Access is denied'), 403
+
+@app.route('/preview/<path:path>')
+@Arg()
+def GetFilePreview(docID, auth=None, path=None):
+    if core.ValidatePermission(docID, auth):
+        doc = core.GetDocByDocID(docID)
+        extension = doc.fileName.rsplit('.', 1)[-1].lower()
+        MIME = None
+        if extension in EXTENSION_MIME:
+            MIME = EXTENSION_MIME[extension]
+        return send_file(filestore.getStorageLocation(docID), mimetype=MIME)
     return GeneralErrorHandler(-400, 'Access is denied'), 403
 
 
