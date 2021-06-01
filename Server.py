@@ -30,7 +30,7 @@ app.config['MONGODB_SETTINGS'] = {
 db.init_app(app)
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
-                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3']
+                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3','json']
 
 _windows_device_files = (
     "CON",
