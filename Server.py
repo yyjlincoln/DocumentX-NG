@@ -29,16 +29,18 @@ app.config['MONGODB_SETTINGS'] = {
 }
 db.init_app(app)
 
+FRONTEND_ROOT = 'https://mcsrv.icu'
+
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
-                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3','json']
+                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3', 'json']
 
 EXTENSION_MIME = {
-    'pdf':'application/pdf',
-    'png':'image/png',
-    'docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'zip':'application/zip',
-    'mp4':'video/mp4',
-    'mp3':'audio/mpeg'
+    'pdf': 'application/pdf',
+    'png': 'image/png',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'zip': 'application/zip',
+    'mp4': 'video/mp4',
+    'mp3': 'audio/mpeg'
 }
 
 _windows_device_files = (
@@ -432,7 +434,7 @@ def deleteDocumentByID(docID):
 @rmap.register_request('/viewDocumentByID')
 @Arg()
 def viewDocumentByID(docID):
-    return redirect('https://mcsrv.icu/view?docID='+str(docID))
+    return redirect(FRONTEND_ROOT+'/view?docID='+str(docID))
 
 
 @rmap.register_request('/getDocumentAccessToken')
@@ -470,6 +472,7 @@ def getDownloadLink(docID):
         return GeneralErrorHandler(-1, 'Could not get auth.')
     else:
         return GeneralErrorHandler(-301, 'Document does not exist')
+
 
 @rmap.register_request('/getPreviewLink')
 @authlib.authDec('document_access')
@@ -566,7 +569,9 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
 def GetFile(docID, auth=None, path=None):
     if core.ValidatePermission(docID, auth):
         return send_file(filestore.getStorageLocation(docID))
+    # For download, we shall not redirect for re-authentication.
     return GeneralErrorHandler(-400, 'Access is denied'), 403
+
 
 @app.route('/preview/<path:path>')
 @Arg()
@@ -578,7 +583,9 @@ def GetFilePreview(docID, auth=None, path=None):
         if extension in EXTENSION_MIME:
             MIME = EXTENSION_MIME[extension]
         return send_file(filestore.getStorageLocation(docID), mimetype=MIME)
-    return GeneralErrorHandler(-400, 'Access is denied'), 403
+    # Attempts to re-authorize
+    return redirect(FRONTEND_ROOT+'/view?docID='+docID)
+    # return GeneralErrorHandler(-400, 'Access is denied'), 403
 
 
 @app.route('/qr')
@@ -916,5 +923,3 @@ def batch_request(batch):
 
 
 rmap.handle_flask(app)
-
-
