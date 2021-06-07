@@ -281,11 +281,16 @@ def ValidatePermission(docID, auth):
             Auths[docID].pop(auth)
             return True
 
-    d = GetDocByDocID(docID)
-    if d:
-        if d.accessLevel == 'public':
-            # Public Document
-            return True
+    # Since the redirection had been set up,
+    # For all public documents, they'll all be redirected to /view?...
+    # And that'll obtain an access token.
+    # This check is temporarily disabled.
+
+    # d = GetDocByDocID(docID)
+    # if d:
+    #     if d.accessLevel == 'public':
+    #         # Public Document
+    #         return True
 
 
     return False
