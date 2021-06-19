@@ -354,8 +354,8 @@ def v_upload_permissions(uID):
 
 
 levels = {
-    # No longer allow direct download. In the future it will actually check the permission of the document.
-    'document_access': [download_ua_check, rolecheck, doc_read],
+    'document_access': [rolecheck, doc_read],
+    'document_download': [download_ua_check, rolecheck, doc_read],
     'doc_read': [rolecheck, doc_read],
     'doc_write': [rolecheck, doc_write],
     'verify_token': [v_token],

@@ -455,7 +455,7 @@ def getDocumentAccessToken(docID):
 
 
 @rmap.register_request('/getDownloadLink')
-@authlib.authDec('document_access')
+@authlib.authDec('document_download')
 @Arg()
 def getDownloadLink(docID):
     r = core.GetDocByDocID(docID)
