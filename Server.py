@@ -460,7 +460,6 @@ def getDocumentAccessToken(docID):
 def getDownloadLink(docID):
     r = core.GetDocByDocID(docID)
     if r:
-        # redAddr = r.fileName
         redAddr = secure_filename(
             r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
         auth = core.GetAuthCode(docID)

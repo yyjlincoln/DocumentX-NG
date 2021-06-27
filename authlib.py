@@ -255,33 +255,34 @@ def doc_write(docID=None, uID=None, token=None):
     if docID:
         d = core.GetDocByDocID(docID)
         if d:
-            if d.accessLevel == 'public':
+            # if d.accessLevel == 'public':
+            #     return {
+            #         'code': 0,
+            #         'message': 'Public Document'
+            #     }
+            # else:
+
+            # Not public - auth
+            authresult = doc_access_v_token(uID, token)
+            if authresult['code'] != 0:
+                return authresult
+            # Check permission
+            if str(d.owner.lower()) == str(uID).lower():
                 return {
                     'code': 0,
-                    'message': 'Public Document'
+                    'message': 'Document owner'
                 }
             else:
-                # Not public - auth
-                authresult = doc_access_v_token(uID, token)
-                if authresult['code'] != 0:
-                    return authresult
-                # Check permission
-                if str(d.owner.lower()) == str(uID).lower():
-                    return {
-                        'code': 0,
-                        'message': 'Document owner'
-                    }
-                else:
-                    for x in d.policies:
-                        if str(x.uID).lower() == str(uID).lower() and x.write == True:
-                            return {
-                                'code': 0,
-                                'message': 'Policy allowed'
-                            }
-                    return {
-                        'code': -400,
-                        'message': 'You do not have the right to make changes to this document.'
-                    }
+                for x in d.policies:
+                    if str(x.uID).lower() == str(uID).lower() and x.write == True:
+                        return {
+                            'code': 0,
+                            'message': 'Policy allowed'
+                        }
+                return {
+                    'code': -400,
+                    'message': 'You do not have the right to make changes to this document.'
+                }
     return {
         'code': -301,
         'message': 'Document does not exist'
