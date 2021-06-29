@@ -86,7 +86,7 @@ class RequestMap():
             }
             return __register_request
         return _register_request
-    
+
     @staticmethod
     def flask_values_proxy(*args, **kw):
         # This proxy MUST exist, otherwise there will be a flask runtime error "Out of context".
@@ -99,6 +99,8 @@ class RequestMap():
         '__channel = flask'
         for route in self.request_map:
             try:
+                if 'methods' not in self.request_map[route]['kw']:
+                    self.request_map[route]['kw']['methods'] = ['GET', 'POST']
                 app.add_url_rule(
                     route, self.request_map[route]['name'], self.flask_proxy(self.request_map[route]['func'], channel='flask', fetch_values=self.flask_values_proxy), *self.request_map[route]['args'], **self.request_map[route]['kw'])
             except Exception as e:

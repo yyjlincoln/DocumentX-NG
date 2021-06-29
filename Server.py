@@ -493,7 +493,7 @@ def getPreviewLink(docID):
         return GeneralErrorHandler(-301, 'Document does not exist')
 
 
-@rmap.register_request('/editDocumentByID', methods=['GET', 'POST'])
+@rmap.register_request('/editDocumentByID')
 @authlib.authDec('doc_write')
 @Arg()
 def editDocumentByID(docID, properties, elToken=None, uID=None):
@@ -600,7 +600,7 @@ def GenerateQR(urlEncoded):
     return Response(imgByteArr, mimetype='image/png')
 
 
-@rmap.register_request('/login', methods=['POST'])
+@rmap.register_request('/login')
 @authlib.authDec('login')
 @Arg()
 def login(uID):
@@ -621,7 +621,7 @@ def login(uID):
     })
 
 
-@rmap.register_request('/register', methods=['POST'])
+@rmap.register_request('/register')
 @Arg()
 def register(uID, name, password):
     return Res(**core.NewUser(uID, name, password))
