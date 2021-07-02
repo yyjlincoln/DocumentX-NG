@@ -223,12 +223,17 @@ def getDocumentByDocumentID(docID):
     if r:
         r = r.to_mongo()
         r.pop('_id')
+        return Res(**{
+            'code': 0,
+            'result': r
+        })
     else:
         r = {}
-    return Res(**{
-        'code': 0,
-        'result': r
-    })
+        return Res(**{
+            'code': -301,
+            'message': 'Document does not exist!',
+            'result': {}
+        })
 
 
 @rmap.register_request('/searchDocumentsByID')
