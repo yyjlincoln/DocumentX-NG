@@ -354,13 +354,33 @@ def v_upload_permissions(uID):
     }
 
 
+def is_app_required_check(uID, accessedFrom='web'):
+    u = core.GetUserByID(uID)
+    if u:
+        if u.role == 'AppOnly':
+            if accessedFrom.split('/')[0] != 'DocumentXAccess':
+                return {
+                    'code': -600,
+                    'message': 'Restrictions on your account prevent you to perform this action outside the App.'
+                }
+        else:
+            return {
+                'code': 0,
+                'message': 'Access is permitted.'
+            }
+    return {
+        'code': -404,
+        'message': 'User does not exist'
+    }
+
+
 levels = {
-    'document_access': [rolecheck, doc_read],
-    'document_download': [download_ua_check, rolecheck, doc_read],
-    'doc_read': [rolecheck, doc_read],
-    'doc_write': [rolecheck, doc_write],
-    'verify_token': [v_token],
-    'login': [_password],
-    'verify_upload': [rolecheck, v_token, v_upload_permissions],
-    'elevated': [_password, v_token]
+    'document_access': [rolecheck, doc_read, is_app_required_check],
+    'document_download': [download_ua_check, rolecheck, doc_read, is_app_required_check],
+    'doc_read': [rolecheck, doc_read, is_app_required_check],
+    'doc_write': [rolecheck, doc_write, is_app_required_check],
+    'verify_token': [v_token, is_app_required_check],
+    'login': [_password, is_app_required_check],
+    'verify_upload': [rolecheck, v_token, v_upload_permissions, is_app_required_check],
+    'elevated': [_password, v_token, is_app_required_check]
 }

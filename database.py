@@ -13,7 +13,6 @@ class Policy(me.EmbeddedDocument):
     read = me.BooleanField(default=True)
     write = me.BooleanField(default=False)
 
-
 class User(me.Document):
     name = me.StringField(required=True)
     uID = me.StringField(required=True, unique=True)

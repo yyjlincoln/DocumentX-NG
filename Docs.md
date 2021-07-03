@@ -17,4 +17,4 @@
 | -406       | Token has expired                                                       |
 | -500       | User-Agent Not Supported (General)                                      |
 | -501       | Wechat-UA Not Supported                                                 |
-
+| -600       | App required                                                            | 
