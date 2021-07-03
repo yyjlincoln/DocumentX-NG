@@ -925,19 +925,23 @@ def validateRemoteLogin(rID):
 @authlib.authDec('sudo_only')
 @Arg()
 def getLogs():
+    ret = []
     for x in core.GetAllLogs():
         Q = dict(x.to_mongo())
         Q.pop('_id')
-    return Res(0, logs = Q)
+        ret.append(Q)
+    return Res(0, logs = ret)
 
 @rmap.register_request('/getLogsByUID')
 @authlib.authDec('sudo_only')
 @Arg()
 def getLogsByUID(uID):
+    ret = []
     for x in core.GetLogsByUID(uID):
         Q = dict(x.to_mongo())
         Q.pop('_id')
-    return Res(0, logs = Q)
+        ret.append(Q)
+    return Res(0, logs = ret)
 
 
 @app.route('/batch', methods=['GET', 'POST'])
