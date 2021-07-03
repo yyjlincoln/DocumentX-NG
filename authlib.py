@@ -361,7 +361,7 @@ def is_app_required_check(uID, accessedFrom='web'):
             if accessedFrom.split('/')[0] != 'DocumentXAccess':
                 return {
                     'code': -600,
-                    'message': 'Restrictions on your account prevent you to perform this action outside the App. If you are using the App, please update to the latest version.'
+                    'message': 'Please upgrade your app to the latest version from TestFlight.'
                 }
             else:
                 return {
