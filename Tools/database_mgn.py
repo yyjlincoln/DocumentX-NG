@@ -65,6 +65,12 @@ class RemoteLoginRequest(me.Document):
     # 1 - Not auth / scan yet
     # 2 - Scanned, not auth
 
+class AccessLog(me.Document):
+    uID = me.StringField()
+    event = me.StringField()
+    docID = me.StringField()
+
+
 
 me.connect('documentx')
 

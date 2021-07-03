@@ -5,7 +5,6 @@ from flask import request
 import inspect
 from utils.ResponseModule import Res
 
-
 class RequestMap():
     '''
     Use register_request() as a decorator to register a request.

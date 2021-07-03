@@ -74,16 +74,26 @@ def ReturnHandler(code, message, as_decorator=False, **kw):
         return r
 
 
+def document_access_log(docID, uID=None, accessedFrom='web'):
+    core.Log(uID, 'access.document:'+accessedFrom, docID=docID)
+    return {
+        'code': 0,
+        'message': 'Lodged.'
+    }
+
+
 def _password(uID, password):
     u = core.GetUserByID(uID)
     if u:
         if u.password == password:
+            core.Log(uID=uID, event='password-login.success')
             return {
                 'code': 0,
                 'uid': u.uID,
                 'message': 'success'
             }
     # To be done
+    core.Log(uID=uID, event='password-login.failed-attempt')
     return {
         'code': -400,
         'message': 'Authentication failed.'
@@ -380,13 +390,20 @@ def is_app_required_check(uID, accessedFrom='web'):
         }
 
 
+def deny_all():
+    return {
+        'code': -400,
+        'message':'Access is denied: Insufficient permissions.'
+    }
+
 levels = {
-    'document_access': [rolecheck, doc_read, is_app_required_check],
-    'document_download': [download_ua_check, rolecheck, doc_read, is_app_required_check],
+    'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check],
+    'document_download': [document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check],
     'doc_read': [rolecheck, doc_read, is_app_required_check],
     'doc_write': [rolecheck, doc_write, is_app_required_check],
     'verify_token': [v_token, is_app_required_check],
     'login': [_password, is_app_required_check],
     'verify_upload': [rolecheck, v_token, v_upload_permissions, is_app_required_check],
-    'elevated': [_password, v_token, is_app_required_check]
+    'elevated': [_password, v_token, is_app_required_check],
+    'sudo_only': [rolecheck, deny_all]
 }

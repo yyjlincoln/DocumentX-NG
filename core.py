@@ -1,4 +1,4 @@
-from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest
+from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog
 import time
 import random
 import hashlib
@@ -11,6 +11,19 @@ Auths = {}
 # MAX_TOKEN_AGE = 60*60*48 # 2 Days
 DEFAULT_MAX_TOKEN_AGE = 60*30  # 30 minutes - school use
 
+def Log(uID = None, event = None, docID = None):
+    r = AccessLog(uID = uID, event = event, docID = docID, time = time.time())
+    r.save()
+    for log in AccessLog.objects(time__lte=time.time()-1209600):
+        # Clear any log that's more than 14 days
+        log.delete()
+
+def GetAllLogs():
+    o = AccessLog.objects()
+    return o
+
+def GetLogsByUID(uID = ''):
+    return AccessLog.objects(uID__iexact = uID)
 
 def NewDocument(name, subject, fileName, owner, comments='', desc='', status='Recorded', docID=None):
     if docID and GetDocByDocID(docID):
