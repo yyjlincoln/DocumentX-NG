@@ -69,6 +69,7 @@ class AccessLog(me.Document):
     uID = me.StringField()
     event = me.StringField()
     docID = me.StringField()
+    time = me.FloatField()
 
 
 
