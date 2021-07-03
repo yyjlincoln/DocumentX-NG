@@ -1,15 +1,11 @@
 import mongoengine as me
-
 class Token(me.EmbeddedDocument):
     created = me.FloatField()
     expires = me.FloatField()
     token = me.StringField()
 
 
-
 class Policy(me.EmbeddedDocument):
-    # Added user field for fixing purposes
-    user = me.StringField(default=None)
     uID = me.StringField(default=None)
     group = me.StringField(default=None)
     read = me.BooleanField(default=True)
@@ -25,6 +21,7 @@ class User(me.Document):
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     tokenMaxAge = me.FloatField()
 
+
 class Document(me.Document):
     name = me.StringField(required=True)
     docID = me.StringField(required=True, unique=True)
@@ -36,17 +33,38 @@ class Document(me.Document):
     fileName = me.StringField(default='file')
     owner = me.StringField(required=True)
     policies = me.EmbeddedDocumentListField(Policy, default=[])
-    accessLevel = me.StringField(default = 'private') # private or public
+    accessLevel = me.StringField(default='private')  # private or public
+    archived = me.BooleanField(default=False)
+    hashTags = me.ListField(me.StringField(), default=[])
+
+# TODO: Remove hashTags and archived from here, and place them in DocumentProperties so that each user can store different values.
+
+
+class ResourceGroup(me.Document):
+    resID = me.StringField()
+    name = me.StringField()
+    uID = me.StringField()
+    documents = me.ListField(me.StringField(), default=[])
+    priority = me.FloatField(default=0)
+
+
+class DocumentProperties(me.Document):
+    uID = me.StringField(required=True)
+    docID = me.StringField(required=True)
+    location = me.StringField(required=True)
+# Location, hashTags
+
+
+class RemoteLoginRequest(me.Document):
+    rID = me.StringField(unique=True)
+    uID = me.StringField()
+    token = me.StringField()
+    created = me.FloatField()
+    auth = me.IntField(default=1)
+    # 0 - Auth success
+    # 1 - Not auth / scan yet
+    # 2 - Scanned, not auth
+
 
 me.connect('documentx')
 
-for x in Document.objects():
-    changeFlag = False
-    for y in x.policies:
-        if y.user:
-            y.uID=y.user
-            y.user=None
-            changeFlag = True
-        if changeFlag:
-            changeFlag=False
-            x.save()
