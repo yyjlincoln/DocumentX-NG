@@ -363,15 +363,21 @@ def is_app_required_check(uID, accessedFrom='web'):
                     'code': -600,
                     'message': 'Restrictions on your account prevent you to perform this action outside the App. If you are using the App, please update to the latest version.'
                 }
+            else:
+                return {
+                    'code': 0,
+                    'message': 'Accessing from the App'
+                }
         else:
             return {
                 'code': 0,
                 'message': 'Access is permitted.'
             }
-    return {
-        'code': -404,
-        'message': 'User does not exist'
-    }
+    else:
+        return {
+            'code': -404,
+            'message': 'User does not exist'
+        }
 
 
 levels = {
