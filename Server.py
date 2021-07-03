@@ -929,20 +929,23 @@ def getLogs():
     for x in core.GetAllLogs():
         Q = dict(x.to_mongo())
         Q.pop('_id')
+        if x['docID']:
+            doc = core.GetDocByDocID(x['docID'])
+            if doc:
+                Q['documentName'] = doc.name
         ret.append(Q)
     return Res(0, logs = ret)
 
 @rmap.register_request('/getLogsByUID')
 @authlib.authDec('sudo_only')
 @Arg()
-def getLogsByUID(uID):
+def getLogsByUID(targetUID):
     ret = []
-    for x in core.GetLogsByUID(uID):
+    for x in core.GetLogsByUID(targetUID):
         Q = dict(x.to_mongo())
         Q.pop('_id')
         ret.append(Q)
     return Res(0, logs = ret)
-
 
 @app.route('/batch', methods=['GET', 'POST'])
 @Arg(batch=json.loads)
