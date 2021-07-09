@@ -382,7 +382,7 @@ def calculateAcceptableSignatures(uID, token):
         signatures.append(hashlib.sha256(uID.lower() + token.lower() + str(x) + APP_SECRET).hexdigest())
     return signatures
 
-def is_app_required_check(uID, token, accessedFrom='web', appSignature=''):
+def is_app_required_check(uID, token = '', accessedFrom='web', appSignature=''):
     u = core.GetUserByID(uID)
     if u:
         if u.role == 'AppOnly':
