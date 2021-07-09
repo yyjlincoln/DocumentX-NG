@@ -7,7 +7,18 @@ import time
 import logging
 from utils.ResponseModule import Res
 from utils.AutoArguments import Arg
+import hashlib
+import json
 
+try:
+    with open('secrets.json') as f:
+        secrets = json.loads(f.read())
+        APP_SECRET = secrets['app_secret']
+except Exception as e:
+    logging.fatal('Could not load secrets due to the following exception:')
+    raise e
+        
+    
 
 class JITDictionary(object):
     '''
@@ -363,8 +374,15 @@ def v_upload_permissions(uID):
         'message': 'You do not have the right to upload a document.'
     }
 
+def calculateAcceptableSignatures(uID, token):
+    ts = int(time.time())
+    signatures = []
+    # Acceptable time ranges: +- 10 seconds
+    for x in [ts - ts%10 - 10, ts - ts%10, ts + ts%10]:
+        signatures.append(hashlib.sha256(uID.lower() + token.lower() + str(x) + APP_SECRET).hexdigest())
+    return signatures
 
-def is_app_required_check(uID, accessedFrom='web'):
+def is_app_required_check(uID, token, accessedFrom='web', appSignature=''):
     u = core.GetUserByID(uID)
     if u:
         if u.role == 'AppOnly':
@@ -373,11 +391,17 @@ def is_app_required_check(uID, accessedFrom='web'):
                     'code': -600,
                     'message': 'Please upgrade your app to the latest version from TestFlight.'
                 }
-            else:
+            if appSignature not in calculateAcceptableSignatures(uID, token):
                 return {
-                    'code': 0,
-                    'message': 'Accessing from the App'
+                    'code': -601,
+                    'message': 'Invalid or empty signature.'
                 }
+
+            return {
+                'code': 0,
+                'message': 'Accessing from the App'
+            }
+
         else:
             return {
                 'code': 0,
@@ -393,8 +417,9 @@ def is_app_required_check(uID, accessedFrom='web'):
 def deny_all():
     return {
         'code': -400,
-        'message':'Access is denied: Insufficient permissions.'
+        'message': 'Access is denied: Insufficient permissions.'
     }
+
 
 levels = {
     'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check],
