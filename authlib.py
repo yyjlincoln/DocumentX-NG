@@ -379,7 +379,7 @@ def calculateAcceptableSignatures(uID, token):
     signatures = []
     # Acceptable time ranges: +- 10 seconds
     for x in [ts - ts%10 - 10, ts - ts%10, ts + ts%10]:
-        signatures.append(hashlib.sha256(uID.lower() + token.lower() + str(x) + APP_SECRET).hexdigest())
+        signatures.append(hashlib.sha256(str(uID.lower() + token.lower() + str(x) + APP_SECRET).encode(encoding='utf-8')).hexdigest())
     return signatures
 
 def is_app_required_check(uID, token = '', accessedFrom='web', appSignature=''):
