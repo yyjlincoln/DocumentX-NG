@@ -97,7 +97,7 @@ def _password(uID, password, accessedFrom='web'):
     u = core.GetUserByID(uID)
     if u:
         if u.password == password:
-            core.Log(uID=uID, event='password-login.success'+accessedFrom)
+            core.Log(uID=uID, event='password-login.success:'+accessedFrom)
             return {
                 'code': 0,
                 'uid': u.uID,
