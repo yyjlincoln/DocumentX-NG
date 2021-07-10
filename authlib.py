@@ -93,18 +93,17 @@ def document_access_log(docID, uID=None, accessedFrom='web'):
     }
 
 
-def _password(uID, password):
+def _password(uID, password, accessedFrom='web'):
     u = core.GetUserByID(uID)
     if u:
         if u.password == password:
-            core.Log(uID=uID, event='password-login.success')
+            core.Log(uID=uID, event='password-login.success'+accessedFrom)
             return {
                 'code': 0,
                 'uid': u.uID,
                 'message': 'success'
             }
-    # To be done
-    core.Log(uID=uID, event='password-login.failed-attempt')
+    core.Log(uID=uID, event='password-login.failed-attempt:'+accessedFrom)
     return {
         'code': -400,
         'message': 'Authentication failed.'
