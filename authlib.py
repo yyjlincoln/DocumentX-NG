@@ -17,8 +17,7 @@ try:
 except Exception as e:
     logging.fatal('Could not load secrets due to the following exception:')
     raise e
-        
-    
+
 
 class JITDictionary(object):
     '''
@@ -373,15 +372,24 @@ def v_upload_permissions(uID):
         'message': 'You do not have the right to upload a document.'
     }
 
+
 def calculateAcceptableSignatures(uID, token):
     ts = int(time.time())
     signatures = []
     # Acceptable time ranges: +- 10 seconds
-    for x in [ts - ts%10 - 10, ts - ts%10, ts + ts%10]:
-        signatures.append(hashlib.sha256(str(uID.lower() + token.lower() + str(x) + APP_SECRET).encode(encoding='utf-8')).hexdigest())
+    for x in [ts - ts % 10 - 10, ts - ts % 10, ts + ts % 10]:
+        signatures.append(hashlib.sha256(str(uID.lower(
+        ) + token.lower() + str(x) + APP_SECRET).encode(encoding='utf-8')).hexdigest())
     return signatures
 
-def is_app_required_check(uID, token = '', accessedFrom='web', appSignature=''):
+
+def is_app_required_check(uID='', token='', accessedFrom='web', appSignature=''):
+    if not uID:
+        # This should be fine, as any sensitive api will require auth and hence uID will not be ''
+        return {
+            'code': 0,
+            'message': 'Warning: Skipping is_app_required check'
+        }
     u = core.GetUserByID(uID)
     if u:
         if u.role == 'AppOnly':
