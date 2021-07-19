@@ -32,7 +32,7 @@ db.init_app(app)
 FRONTEND_ROOT = 'https://mcsrv.icu'
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
-                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3', 'json']
+                      'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'png', 'jpg', 'jpeg', 'heic', 'mp4', 'mp3', 'json', 'note']
 
 EXTENSION_MIME = {
     'pdf': 'application/pdf',
