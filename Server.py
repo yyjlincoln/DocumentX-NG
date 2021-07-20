@@ -944,6 +944,10 @@ def getLogsByUID(targetUID):
     for x in core.GetLogsByUID(targetUID):
         Q = dict(x.to_mongo())
         Q.pop('_id')
+        if x['docID']:
+            doc = core.GetDocByDocID(x['docID'])
+            if doc:
+                Q['documentName'] = doc.name
         ret.append(Q)
     return Res(0, logs = ret)
 
