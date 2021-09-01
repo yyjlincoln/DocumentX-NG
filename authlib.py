@@ -237,7 +237,7 @@ def doc_read(docID=None, uID=None, token=None):
     if docID:
         d = core.GetDocByDocID(docID)
         if d:
-            if d.accessLevel == 'public':
+            if d.accessLevel == 'public' or d.accessLevel == 'publicAppOnly':
                 return {
                     'code': 0,
                     'message': 'Public Document'
@@ -421,6 +421,30 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='')
         }
 
 
+def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID=''):
+    if docID:
+        if core.GetDocByDocID(docID).accessLevel == 'publicAppOnly' or core.GetDocByDocID(docID).accessLevel == 'privateAppOnly':
+            
+            if accessedFrom.split('/')[0] != 'DocumentXAccess':
+                return {
+                    'code': -600,
+                    'message': 'This document may only be accessed in the DocumentX App.'
+                }
+
+            if appSignature not in calculateAcceptableSignatures(uID, token):
+                return {
+                    'code': -601,
+                    'message': 'Invalid or empty signature.'
+                }
+            
+    return {
+        'code': 0,
+        'message': 'Access is permitted.'
+    }
+        
+
+
+
 def deny_all():
     return {
         'code': -400,
@@ -429,8 +453,8 @@ def deny_all():
 
 
 levels = {
-    'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check],
-    'document_download': [document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check],
+    'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
+    'document_download': [document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check, document_access_app_check],
     'doc_read': [rolecheck, doc_read, is_app_required_check],
     'doc_write': [rolecheck, doc_write, is_app_required_check],
     'verify_token': [v_token, is_app_required_check],
