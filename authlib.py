@@ -10,6 +10,9 @@ from utils.AutoArguments import Arg
 import hashlib
 import json
 
+# ViewInAppOnly
+# --> No document downloads
+
 try:
     with open('secrets.json') as f:
         secrets = json.loads(f.read())
@@ -421,9 +424,9 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='')
         }
 
 
-def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID=''):
+def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID=''):            
     if docID:
-        if core.GetDocByDocID(docID).accessLevel == 'publicAppOnly' or core.GetDocByDocID(docID).accessLevel == 'privateAppOnly':
+        if core.GetDocByDocID(docID).accessLevel == 'publicAppOnly' or core.GetDocByDocID(docID).accessLevel == 'privateAppOnly' or core.GetUserByID(uID).role == 'ViewInAppOnly':
             
             if accessedFrom.split('/')[0] != 'DocumentXAccess':
                 return {
