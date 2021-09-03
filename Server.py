@@ -635,11 +635,22 @@ def register(uID, name, password):
 @rmap.register_request('/getAuthStatus')
 @authlib.authDec('verify_token')
 @Arg()
-def getAuthStatus():
-    return {
-        'code': 0,
-        'message': 'Auth ok'
-    }
+def getAuthStatus(uID):
+    u = core.GetUserByID(uID)
+    if u:
+        return {
+            'code': 0,
+            'message': 'Auth ok',
+            'name': u.name,
+            'uID': u.uID
+        }
+    else:
+        return {
+            'code': -1,
+            'message': 'Could not get name',
+            'name': '',
+            'uID': uID
+        }
 
 # app.run('localhost',port=80)
 
@@ -934,7 +945,8 @@ def getLogs():
             if doc:
                 Q['documentName'] = doc.name
         ret.append(Q)
-    return Res(0, logs = ret)
+    return Res(0, logs=ret)
+
 
 @rmap.register_request('/getLogsByUID')
 @authlib.authDec('sudo_only')
@@ -949,15 +961,18 @@ def getLogsByUID(targetUID):
             if doc:
                 Q['documentName'] = doc.name
         ret.append(Q)
-    return Res(0, logs = ret)
+    return Res(0, logs=ret)
+
 
 @app.route('/appdirect/<path:path>')
 def appDirect(path):
     return redirect("documentx://" + path, code=302)
 
+
 @app.route('/batch', methods=['GET', 'POST'])
 @Arg(batch=json.loads)
 def batch_request(batch):
     return rmap.parse_batch(batch)
+
 
 rmap.handle_flask(app)
