@@ -5,6 +5,14 @@ import hashlib
 import base64
 import secrets
 from mongoengine.queryset.visitor import Q
+import json
+
+# Color schemes
+try:
+    with open('colors.json') as f:
+        COLORSCHEME = json.loads(f.read())
+except:
+    COLORSCHEME = {}
 
 
 Auths = {}
@@ -272,6 +280,9 @@ def GetDocuments(uID=None, archived=False, start=0, end=50):
 
     return []
 
+def GetUIColorScheme():
+    # Gets the colors for each document
+    return COLORSCHEME
 
 def GetAuthCode(docID):
     tok = secrets.token_urlsafe()

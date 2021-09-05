@@ -454,6 +454,11 @@ def deny_all():
         'message': 'Access is denied: Insufficient permissions.'
     }
 
+def allow_all():
+    return {
+        'code': 0,
+        'message': 'Allowed'
+    }
 
 levels = {
     'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
@@ -464,5 +469,6 @@ levels = {
     'login': [_password, is_app_required_check],
     'verify_upload': [rolecheck, v_token, v_upload_permissions, is_app_required_check],
     'elevated': [_password, v_token, is_app_required_check],
-    'sudo_only': [rolecheck, deny_all]
+    'sudo_only': [rolecheck, deny_all],
+    'public': [allow_all]
 }

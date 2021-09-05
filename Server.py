@@ -676,6 +676,13 @@ def GetResourceGroupByID(uID, resID):
     }
 
 
+@rmap.register_request('/getUIColorScheme')
+@authlib.authDec('public')
+@Arg()
+def GetUIColorScheme():
+    r = core.GetUIColorScheme()
+    return Res(code=0, message="Success", colorscheme=r)
+
 @rmap.register_request('/newResourceGroup')
 @authlib.authDec('verify_token')
 @Arg()
