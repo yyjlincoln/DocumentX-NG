@@ -1140,18 +1140,6 @@ def getExamAttemptsInProgress(uID):
         ret.append(AddExamInfoToAttempt(attempt))
     return Res(0, attempts = ret)
 
-@rmap.register_request('/exam/getExamAttemptsInProgress')
-@authlib.authDec('verify_token')
-@Arg()
-def getExamAttemptsInProgress(uID):
-    attempts = core.GetExamAttemptsInProgress(uID)
-    ret = []
-    for attempt in attempts:
-        attempt = dict(attempt.to_mongo())
-        attempt.pop('_id')
-        ret.append(AddExamInfoToAttempt(attempt))
-    return Res(0, attempts = ret)
-
 @app.route('/appdirect/<path:path>')
 def appDirect(path):
     return redirect("documentx://" + path, code=302)
