@@ -455,7 +455,7 @@ def GetExamsByUID(uID, onlyAttemptable=True):
         ret = []
         exams = Exam.objects(Q(users__iexact=uID) | Q(createdBy__iexact=uID)).order_by('-created')
         for exam in exams:
-            if len(GetUserExamAttempts(uID, exam.examID)) < exam.maxAttemptsAllowed:
+            if len(GetUserExamAttempts(uID, exam.examID)) < exam.maxAttemptsAllowed or exam.createdBy == uID:
                 ret.append(exam)
         return ret
     else:
