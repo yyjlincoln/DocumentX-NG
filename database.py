@@ -78,10 +78,10 @@ class Exam(me.Document):
     name = me.StringField(required=True)
     maxTimeAllowed = me.FloatField(required=True) # in seconds
     maxAttemptsAllowed = me.IntField(required=True, default = 1)
-    createdBy = me.StringField()
-    users = me.ListField(me.StringField())
-    created = me.FloatField()
-    docID = me.StringField()
+    createdBy = me.StringField(required=True)
+    users = me.ListField(me.StringField(), default=[])
+    created = me.FloatField(required=True)
+    docID = me.StringField(default='')
 
 class ExamAttempt(me.Document):
     attemptID = me.StringField(required=True, unique=True)
