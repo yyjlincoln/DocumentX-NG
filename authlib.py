@@ -493,6 +493,44 @@ def exam_write(examID, uID):
         'message': 'Exam does not exist'
     }
 
+def exam_document_permission_check(uID, docID = None, properties = None):
+    if properties:
+        try:
+            properties = json.loads(properties)
+            assert isinstance(properties, dict)
+        except:
+            return {
+                'code': -1,
+                'message': 'Could not perform security check as properties can not be parsed as a JSON, or properties is not a dictionary.'
+            }
+        if 'docID' in properties:
+            docID = properties['docID']
+            doc = core.GetDocByDocID(docID)
+            if not doc:
+                return Res(**{
+                    'code': -301,
+                    'message': 'Document modification is detected, yet that document does not exist. For security reasons, the entire request is rejected.'
+                })
+            if doc.owner != uID:
+                return Res(**{
+                    'code': -400,
+                    'message': 'You can not use a document that\'s not yours.'
+                })
+    if docID:
+        doc = core.GetDocByDocID(docID)
+        if not doc:
+            return Res(**{
+                'code': -301,
+                'message': 'Document does not exist.'
+            })
+        if doc.owner != uID:
+            return Res(**{
+                'code': -400,
+                'message': 'You can not create an exam, using a document that\'s not yours.'
+            })
+    
+    
+
 def exam_read(examID, uID):
     exam = core.GetExamByExamID(examID)
     if exam:
@@ -581,7 +619,7 @@ levels = {
     'attempt_write': [rolecheck, v_token, attempt_write, is_app_required_check],
     'attempt_read': [rolecheck, v_token, attempt_read, is_app_required_check],
     'exam_creation': [rolecheck, v_token, exam_creation, is_app_required_check],
-    'exam_write': [rolecheck, v_token, exam_write, is_app_required_check],
+    'exam_write': [rolecheck, v_token, exam_write, exam_document_permission_check, is_app_required_check],
     'exam_read': [rolecheck, v_token, exam_read, is_app_required_check],
     'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
     'document_download': [document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check, document_access_app_check],

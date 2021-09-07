@@ -418,7 +418,6 @@ def newExam(name, maxTimeAllowed, maxAttemptsAllowed = 1, examID=None, createdBy
     try:
         e = Exam(maxTimeAllowed=maxTimeAllowed, name=name, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, createdBy=createdBy, users=users, created = time.time(), docID = docID)
         e.save()
-        print('Exam saved')
         return examID
     except Exception as e:
         print(e)
@@ -477,7 +476,6 @@ def GetUnfinishedExamAttempts(uID, examID = None):
 def GetExamAttemptsInProgress(uID, examID = None):
     ts = time.time()
     ret = []
-    print(GetUnfinishedExamAttempts(uID, examID))
     for attempt in GetUnfinishedExamAttempts(uID, examID):
         exam = GetExamByExamID(attempt.examID)
         if exam:
