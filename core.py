@@ -450,8 +450,17 @@ def GetExamByExamID(examID):
 def GetExamAttemptByAttemptID(attemptID):
     return ExamAttempt.objects(attemptID__iexact=attemptID).first()
 
-def GetExamsByUID(uID):
-    return Exam.objects(Q(users__iexact=uID) | Q(createdBy__iexact=uID)).order_by('-created')
+def GetExamsByUID(uID, onlyAttemptable=True):
+    if onlyAttemptable:
+        ret = []
+        exams = Exam.objects(Q(users__iexact=uID) | Q(createdBy__iexact=uID)).order_by('-created')
+        for exam in exams:
+            if len(GetUserExamAttempts(uID, exam.examID)) < exam.maxAttemptsAllowed:
+                ret.append(exam)
+        return ret
+    else:
+        return Exam.objects(Q(users__iexact=uID) | Q(createdBy__iexact=uID)).order_by('-created')
+
 
 def GetUserExamAttempts(uID, examID = None):
     if examID:

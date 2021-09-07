@@ -15,6 +15,7 @@ import filestore
 from utils.AutoArguments import Arg
 from utils.RequestMapping import RequestMap
 from utils.ResponseModule import Res
+from utils.AutoArgValidators import StringBool
 
 # Initialize app
 app = Flask(__name__)
@@ -1022,9 +1023,9 @@ def getExamByID(examID):
 
 @rmap.register_request('/exam/getExamsByUID')
 @authlib.authDec('verify_token')
-@Arg()
-def getExamsByUID(uID):
-    exams = core.GetExamsByUID(uID)
+@Arg(onlyAttemptable = StringBool)
+def getExamsByUID(uID, onlyAttemptable='true'):
+    exams = core.GetExamsByUID(uID, onlyAttemptable=onlyAttemptable)
     ret = []
     for exam in exams:
         exam = dict(exam.to_mongo())
