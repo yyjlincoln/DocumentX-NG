@@ -1010,7 +1010,7 @@ def editExam(uID, examID, properties = '{}'):
         return Res(0, success = success, failed = failed)
     return Res(-701, 'Exam does not exist')
 
-@rmap.register_request('/exam/getExamByID')
+@rmap.register_request('/exam/getExamByExamID')
 @authlib.authDec('exam_read')
 @Arg(examID=str)
 def getExamByID(examID):
