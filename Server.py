@@ -972,6 +972,19 @@ def getLogsByUID(targetUID):
 @authlib.authDec('exam_creation')
 @Arg(maxTimeAllowed=float, name=str, maxAttemptsAllowed=int, examID=str, users=json.loads)
 def newExam(uID, name, maxTimeAllowed, maxAttemptsAllowed=1, examID='', users = '[]', docID=''):
+    if docID:
+        doc = core.GetDocByDocID(docID)
+        if not doc:
+            return Res(**{
+                'code': -301,
+                'message': 'Document does not exist.'
+            })
+        if doc.owner != uID:
+            return Res(**{
+                'code': -400,
+                'message': 'You can not create an exam, using a document that\'s not yours.'
+            })
+        
     eID = core.newExam(name=name, createdBy=uID, maxTimeAllowed=maxTimeAllowed, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, users=users, docID=docID)
     if eID:
         return Res(0, examID=eID)
@@ -993,6 +1006,21 @@ def deleteExam(examID):
 @authlib.authDec('exam_write')
 @Arg(examID=str, properties=json.loads)
 def editExam(uID, examID, properties = '{}'):
+    if 'docID' in properties:
+        docID = properties['docID']
+        doc = core.GetDocByDocID(docID)
+        if not doc:
+            return Res(**{
+                'code': -301,
+                'message': 'Document modification is detected, yet that document does not exist. For security reasons, the entire request is rejected.'
+            })
+        if doc.owner != uID:
+            return Res(**{
+                'code': -400,
+                'message': 'You can not using a document that\'s not yours.'
+            })
+
+
     exam = core.GetExamByExamID(examID=examID)
     success = []
     failed = []
