@@ -1,3 +1,4 @@
+from typing import Dict
 from flask import Flask, request, jsonify, redirect, send_file, Response
 from flask_mongoengine import MongoEngine
 from database import Document, User, Policy
@@ -1056,15 +1057,32 @@ def deleteAttempt(attemptID):
         return Res(-1, 'Failed to delete the attempt')
     return Res(-701, 'Attempt does not exist')
 
+def AddExamInfoToAttempt(attemptDict: Dict) -> Dict:
+    if 'examID' in attemptDict:
+        exam = core.GetExamByExamID(attemptDict['examID'])
+        if exam:
+            attemptDict['exam'] = dict(exam.to_mongo())
+            attemptDict['exam'].pop('_id')
+        else:
+            attemptDict['exam'] = {
+                'examID': attemptDict['examID'],
+                'name': '<ERROR: EXAM DOES NOT EXIST>',
+                'maxAttemptsAllowed': 0,
+                'maxTimeAllowed': 0,
+                'createdBy': '',
+                'users': '[]'
+            }
+    return attemptDict
+
 @rmap.register_request('/exam/getAttemptByAttemptID')
 @authlib.authDec('attempt_read')
 @Arg(attemptID=str)
 def getAttempt(attemptID):
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
     if attempt:
-        if core.DeleteExamAttemptByAttemptID(attemptID=attemptID):
-            return Res(0)
-        return Res(-1, 'Failed to delete the attempt')
+        attempt = dict(attempt.to_mongo())
+        attempt.pop('_id')
+        return Res(0, attempt = AddExamInfoToAttempt(attempt))
     return Res(-701, 'Attempt does not exist')
 
 @rmap.register_request('/exam/editAttempt')
@@ -1114,7 +1132,7 @@ def getExamAttemptsInProgress(uID):
     for attempt in attempts:
         attempt = dict(attempt.to_mongo())
         attempt.pop('_id')
-        ret.append(attempt)
+        ret.append(AddExamInfoToAttempt(attempt))
     return Res(0, attempts = ret)
 
 @app.route('/appdirect/<path:path>')
