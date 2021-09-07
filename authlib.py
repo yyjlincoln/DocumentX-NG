@@ -589,7 +589,7 @@ levels = {
     'doc_write': [rolecheck, doc_write, is_app_required_check],
     'verify_token': [v_token, is_app_required_check],
     'login': [_password, is_app_required_check],
-    'verify_upload': [rolecheck, v_token, v_upload_permissions, is_app_required_check],
+    'verify_upload': [rolecheck, v_token, v_upload_permissions], # Don't check is_app_required as upload would take a long time
     'elevated': [_password, v_token, is_app_required_check],
     'sudo_only': [rolecheck, deny_all],
     'public': [allow_all]
