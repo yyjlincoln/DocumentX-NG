@@ -1014,13 +1014,15 @@ def editExam(uID, examID, properties = '{}'):
 @rmap.register_request('/exam/getExamByExamID')
 @authlib.authDec('exam_read')
 @Arg(examID=str)
-def getExamByID(examID):
+def getExamByID(uID, examID):
     exam = core.GetExamByExamID(examID=examID)
     if exam:
         exam = dict(exam.to_mongo())
         exam.pop('_id')
+        exam['attemptsNum'] = len(core.GetUserExamAttempts(examID=exam['examID'], uID=uID))
         return Res(0, exam = exam)
     return Res(-701, 'Exam does not exist')
+
 
 @rmap.register_request('/exam/getExamsByUID')
 @authlib.authDec('verify_token')
@@ -1031,8 +1033,10 @@ def getExamsByUID(uID, onlyAttemptable='true'):
     for exam in exams:
         exam = dict(exam.to_mongo())
         exam.pop('_id')
+        exam['attemptsNum'] = len(core.GetUserExamAttempts(examID=exam['examID'], uID=uID))
         ret.append(exam)
     return Res(0, exams = ret)
+
 
 @rmap.register_request('/exam/newAttempt')
 @authlib.authDec('attempt_creation')
@@ -1066,11 +1070,11 @@ def AddExamInfoToAttempt(attemptDict: Dict) -> Dict:
         else:
             attemptDict['exam'] = {
                 'examID': attemptDict['examID'],
-                'name': '<ERROR: EXAM DOES NOT EXIST>',
+                'name': '<DELETED EXAM>',
                 'maxAttemptsAllowed': 0,
                 'maxTimeAllowed': 0,
                 'createdBy': '',
-                'users': '[]'
+                'users': []
             }
     return attemptDict
 
@@ -1123,6 +1127,18 @@ def finishAttempt(attemptID, docID = None):
         attempt.save()
         return Res(0)
     return Res(-701, 'Attempt does not exist')
+
+@rmap.register_request('/exam/getExamAttemptsInProgress')
+@authlib.authDec('verify_token')
+@Arg()
+def getExamAttemptsInProgress(uID):
+    attempts = core.GetExamAttemptsInProgress(uID)
+    ret = []
+    for attempt in attempts:
+        attempt = dict(attempt.to_mongo())
+        attempt.pop('_id')
+        ret.append(AddExamInfoToAttempt(attempt))
+    return Res(0, attempts = ret)
 
 @rmap.register_request('/exam/getExamAttemptsInProgress')
 @authlib.authDec('verify_token')
