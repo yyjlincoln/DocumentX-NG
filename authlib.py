@@ -236,7 +236,7 @@ def doc_access_v_token(uID=None, token=None):
     }
 
 
-def doc_read(docID=None, uID=None, token=None):
+def doc_read(docID=None, uID=None, token=None, attemptID=None):
     if docID:
         d = core.GetDocByDocID(docID)
         if d:
@@ -263,6 +263,17 @@ def doc_read(docID=None, uID=None, token=None):
                                 'code': 0,
                                 'message': 'Policy allowed'
                             }
+                    # Checks for exam access
+                    if attemptID:
+                        attempt = core.GetExamAttemptByAttemptID(attemptID)
+                        if attempt:
+                            exam = core.GetExamByExamID(attempt.examID)
+                            if exam:
+                                if attempt.completed == False and attempt.timeStarted + exam.maxTimeAllowed >= time.time():
+                                    return {
+                                        'code': 0,
+                                        'message': 'Exam Access'
+                                    }
                     return {
                         'code': -400,
                         'message': 'You do not have the right to access this document.'
