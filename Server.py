@@ -971,8 +971,8 @@ def getLogsByUID(targetUID):
 @rmap.register_request('/exam/newExam')
 @authlib.authDec('exam_creation')
 @Arg(maxTimeAllowed=float, name=str, maxAttemptsAllowed=int, examID=str, users=json.loads)
-def newExam(uID, name, maxTimeAllowed, maxAttemptsAllowed=1, examID='', users = '[]'):
-    eID = core.newExam(name=name, createdBy=uID, maxTimeAllowed=maxTimeAllowed, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, users=users)
+def newExam(uID, name, maxTimeAllowed, maxAttemptsAllowed=1, examID='', users = '[]', docID=''):
+    eID = core.newExam(name=name, createdBy=uID, maxTimeAllowed=maxTimeAllowed, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, users=users, docID=docID)
     if eID:
         return Res(0, examID=eID)
     else:

@@ -410,13 +410,13 @@ def GetAllDocumentProperties(docID):
     r = DocumentProperties.objects(docID__iexact=docID)
     return r
 
-def newExam(name, maxTimeAllowed, maxAttemptsAllowed = 1, examID=None, createdBy=None, users = []):
+def newExam(name, maxTimeAllowed, maxAttemptsAllowed = 1, examID=None, createdBy=None, users = [], docID = ''):
     if not examID:
         examID = secrets.token_hex(6)
     if GetExamByExamID(examID):
         return None
     try:
-        e = Exam(maxTimeAllowed=maxTimeAllowed, name=name, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, createdBy=createdBy, users=users, created = time.time())
+        e = Exam(maxTimeAllowed=maxTimeAllowed, name=name, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, createdBy=createdBy, users=users, created = time.time(), docID = docID)
         e.save()
         print('Exam saved')
         return examID
