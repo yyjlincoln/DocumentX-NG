@@ -1070,7 +1070,7 @@ def getAttempt(attemptID):
 @authlib.authDec('attempt_write')
 @Arg(attemptID=str, properties=json.loads)
 def editAttempt(attemptID, properties = '{}'):
-    if 'timeStarted' in properties or 'timeCompleted' in properties:
+    if 'timeStarted' in properties or 'timeCompleted' in properties or 'completed'in properties:
         return Res(-400, 'For security reasons, you may not edit those properties')
     
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
@@ -1090,6 +1090,18 @@ def editAttempt(attemptID, properties = '{}'):
                 return Res(-1, 'Failed to edit the attempt')        
         return Res(0, success = success, failed = failed)
     return Res(-701, 'Exam does not exist')
+
+@rmap.register_request('/exam/finishAttempt')
+@authlib.authDec('attempt_write')
+@Arg(attemptID=str)
+def finishAttempt(attemptID, properties = '{}'):
+    attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
+    if attempt:
+        attempt.completed = True
+        attempt.timeCompleted = time.time()
+        attempt.save()
+        return Res(0)
+    return Res(-701, 'Attempt does not exist')
 
 @rmap.register_request('/exam/getExamAttemptsInProgress')
 @authlib.authDec('verify_token')
