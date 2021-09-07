@@ -1113,11 +1113,12 @@ def editAttempt(attemptID, properties = '{}'):
 @rmap.register_request('/exam/finishAttempt')
 @authlib.authDec('attempt_write')
 @Arg(attemptID=str)
-def finishAttempt(attemptID, docID):
+def finishAttempt(attemptID, docID = None):
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
     if attempt:
         attempt.completed = True
-        attempt.docID = docID
+        if docID:
+            attempt.docID = docID
         attempt.timeCompleted = time.time()
         attempt.save()
         return Res(0)
