@@ -72,3 +72,22 @@ class AccessLog(me.Document):
     event = me.StringField()
     docID = me.StringField()
     time = me.FloatField()
+
+
+class Exam(me.Document):
+    examID = me.StringField(required=True, unique=True)
+    name = me.StringField(required=True)
+    maxTimeAllowed = me.FloatField(required=True) # in seconds
+    maxAttemptsAllowed = me.IntField(required=True, default = 1)
+    createdBy = me.StringField()
+    users = me.ListField(me.StringField())
+    created = me.FloatField()
+
+class ExamAttempt(me.Document):
+    attemptID = me.StringField(required=True, unique=True)
+    examID = me.StringField(required=True)
+    uID = me.StringField(required=True)
+    timeStarted = me.FloatField(required=True)
+    completed = me.BooleanField(default=False)
+    timeCompleted = me.FloatField()
+    docID = me.StringField() # Exam attempt file

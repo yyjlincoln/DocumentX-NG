@@ -1,4 +1,4 @@
-from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog
+from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog, Exam, ExamAttempt
 import time
 import random
 import hashlib
@@ -409,3 +409,80 @@ def GetDocumentProperties(uID, docID):
 def GetAllDocumentProperties(docID):
     r = DocumentProperties.objects(docID__iexact=docID)
     return r
+
+def newExam(name, maxTimeAllowed, maxAttemptsAllowed = 1, examID=None, createdBy=None, users = []):
+    if not examID:
+        examID = secrets.token_hex(6)
+    if GetExamByExamID(examID):
+        return None
+    try:
+        e = Exam(maxTimeAllowed=maxTimeAllowed, name=name, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, createdBy=createdBy, users=users, created = time.time())
+        e.save()
+        print('Exam saved')
+        return examID
+    except Exception as e:
+        print(e)
+        return None
+
+def DeleteExamByExamID(examID):
+    e = GetExamByExamID(examID)
+    if e:
+        try:
+            e.delete()
+            return True
+        except:
+            return False
+    return False
+
+def DeleteExamAttemptByAttemptID(attemptID):
+    e = GetExamAttemptByAttemptID(attemptID)
+    if e:
+        try:
+            e.delete()
+            return True
+        except:
+            return False
+    return False
+
+def GetExamByExamID(examID):
+    return Exam.objects(examID__iexact=examID).first()
+
+def GetExamAttemptByAttemptID(attemptID):
+    return ExamAttempt.objects(attemptID__iexact=attemptID).first()
+
+def GetExamsByUID(uID):
+    return Exam.objects(Q(users__iexact=uID) | Q(createdBy__iexact=uID)).order_by('-created')
+
+def GetUserExamAttempts(uID, examID = None):
+    if examID:
+        return ExamAttempt.objects(uID__iexact=uID, examID__iexact=examID).order_by('-timeStarted')
+    else:
+        return ExamAttempt.objects(uID__iexact=uID).order_by('-timeStarted')
+
+def GetUnfinishedExamAttempts(uID, examID = None):
+    if examID:
+        return ExamAttempt.objects(uID__iexact=uID, examID__iexact=examID, completed=False)
+    else:   
+        return ExamAttempt.objects(uID__iexact=uID, completed=False)
+
+def GetExamAttemptsInProgress(uID, examID = None):
+    ts = time.time()
+    ret = []
+    print(GetUnfinishedExamAttempts(uID, examID))
+    for attempt in GetUnfinishedExamAttempts(uID, examID):
+        exam = GetExamByExamID(attempt.examID)
+        if exam:
+            if attempt.timeStarted + exam.maxTimeAllowed >= ts:
+                ret.append(attempt)
+    return ret
+            
+def newAttempt(uID, examID):
+    attemptID = secrets.token_hex(6)
+    try:
+        e = ExamAttempt(uID=uID, examID=examID, attemptID=attemptID, timeStarted=time.time(), completed=False)
+        e.save()
+        return attemptID
+    except Exception as e:
+        print(e)
+        return None
+        

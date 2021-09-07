@@ -451,7 +451,7 @@ def document_access_app_check(uID='', token='', accessedFrom='web', appSignature
 def deny_all():
     return {
         'code': -400,
-        'message': 'Access is denied: Insufficient permissions.'
+        'message': 'Access is denied.'
     }
 
 def allow_all():
@@ -460,7 +460,118 @@ def allow_all():
         'message': 'Allowed'
     }
 
+def exam_creation():
+    return {
+        'code': 0,
+        'message': 'Allowed'
+    }
+
+def exam_write(examID, uID):
+    if core.GetExamByExamID(examID):
+        if core.GetExamByExamID(examID).createdBy == uID:
+            return {
+                'code': 0,
+                'message': 'Allowed'
+            }
+        return {
+            'code': -400,
+            'message': 'You do not have the right to make changes to this exam.'
+        }        
+    return {
+        'code': -701,
+        'message': 'Exam does not exist'
+    }
+
+def exam_read(examID, uID):
+    exam = core.GetExamByExamID(examID)
+    if exam:
+        if uID in exam.users or uID == exam.createdBy or core.GetUserExamAttempts(uID, examID)!=[]:
+            return {
+                'code': 0,
+                'message': 'Allowed'
+            }        
+        return {
+            'code': -400,
+            'message': 'You do not have read access to this exam.'
+        }
+    return {
+        'code': -701,
+        'message': 'Exam does not exist'
+    }
+
+def attempt_creation(examID, uID):
+    exam = core.GetExamByExamID(examID=examID)
+    if exam:
+        if len(core.GetUserExamAttempts(uID=uID, examID=examID)) >= exam.maxAttemptsAllowed:
+            return {
+                'code':-702,
+                'message':'You have reached the maximum number of attempts for this exam.'
+            }
+        return {
+            'code':0,
+            'message':'Permitted.'
+        }
+    
+
+def attempt_read(attemptID, uID):
+    attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
+    if attempt:
+        if attempt.uID == uID:
+            return {
+                'code': 0,
+                'message': 'Allowed'
+            }
+        return {
+            'code': -400,
+            'message': 'You do not have access to this attempt.'
+        }
+    return {
+        'code': -701,
+        'message': 'Attempt does not exist'
+    }
+
+def attempt_write(attemptID, uID):
+    attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
+    if attempt:
+        if attempt.uID == uID or exam_write(attempt.examID, uID):
+            return {
+                'code': 0,
+                'message': 'Allowed'
+            }
+        return {
+            'code': -400,
+            'message': 'You do not have access to this attempt.'
+        }
+    return {
+        'code': -701,
+        'message': 'Attempt does not exist'
+    }
+
+
+def exam_read(examID, uID):
+    exam = core.GetExamByExamID(examID)
+    if exam:
+        if uID in exam.users or uID == exam.createdBy or core.GetUserExamAttempts(uID, examID)!=[]:
+            return {
+                'code': 0,
+                'message': 'Allowed'
+            }        
+        return {
+            'code': -400,
+            'message': 'You do not have read access to this exam.'
+        }
+    return {
+        'code': -701,
+        'message': 'Exam does not exist'
+    }
+
 levels = {
+    'attempt_creation': [rolecheck, v_token, exam_read, attempt_creation, is_app_required_check],
+    'attempt_write': [rolecheck, v_token, attempt_write, is_app_required_check],
+    'attempt_read': [rolecheck, v_token, attempt_read, is_app_required_check],
+    'exam_creation': [rolecheck, v_token, exam_creation, is_app_required_check],
+    'exam_write': [rolecheck, v_token, exam_write, is_app_required_check],
+    'exam_read': [rolecheck, v_token, exam_read, is_app_required_check],
     'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
     'document_download': [document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check, document_access_app_check],
     'doc_read': [rolecheck, doc_read, is_app_required_check],

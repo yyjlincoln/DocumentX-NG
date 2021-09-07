@@ -540,16 +540,11 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
         for x in d:
             try:
                 x.docID = properties['docID']
+                x.save()
             except:
                 print('Warn: Could not change docID in DocumentProperties.')
-
     try:
         doc.save()
-        try:
-            for x in d:
-                x.save()
-        except:
-            print('Warn: Could not save changed DocumentProperties.')
     except:
         if 'docID' in properties:
             try:
@@ -971,6 +966,143 @@ def getLogsByUID(targetUID):
     return Res(0, logs=ret)
 
 
+@rmap.register_request('/exam/newExam')
+@authlib.authDec('exam_creation')
+@Arg(maxTimeAllowed=float, name=str, maxAttemptsAllowed=int, examID=str, users=json.loads)
+def newExam(uID, name, maxTimeAllowed, maxAttemptsAllowed=1, examID='', users = '[]'):
+    eID = core.newExam(name=name, createdBy=uID, maxTimeAllowed=maxTimeAllowed, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, users=users)
+    if eID:
+        return Res(0, examID=eID)
+    else:
+        return Res(-1, 'Failed to create the exam')
+
+@rmap.register_request('/exam/deleteExam')
+@authlib.authDec('exam_write')
+@Arg(examID=str)
+def deleteExam(examID):
+    exam = core.GetExamByExamID(examID=examID)
+    if exam:
+        if core.DeleteExamByExamID(examID=examID):
+            return Res(0)
+        return Res(-1, 'Failed to delete the exam')
+    return Res(-701, 'Exam does not exist')
+
+@rmap.register_request('/exam/editExam')
+@authlib.authDec('exam_write')
+@Arg(examID=str, properties=json.loads)
+def editExam(uID, examID, properties = '{}'):
+    exam = core.GetExamByExamID(examID=examID)
+    success = []
+    failed = []
+
+    if exam:
+        for prop in properties:
+            if prop in exam:
+                setattr(exam, prop, properties[prop])
+                success.append(prop)
+            else:
+                failed.append(prop)
+            try:
+                exam.save()
+            except:
+                return Res(-1, 'Failed to edit the exam')        
+        return Res(0, success = success, failed = failed)
+    return Res(-701, 'Exam does not exist')
+
+@rmap.register_request('/exam/getExamByID')
+@authlib.authDec('exam_read')
+@Arg(examID=str)
+def getExamByID(examID):
+    exam = core.GetExamByExamID(examID=examID)
+    if exam:
+        exam = dict(exam.to_mongo())
+        exam.pop('_id')
+        return Res(0, exam = exam)
+    return Res(-701, 'Exam does not exist')
+
+@rmap.register_request('/exam/getExamsByUID')
+@authlib.authDec('verify_token')
+@Arg()
+def getExamsByUID(uID):
+    exams = core.GetExamsByUID(uID)
+    ret = []
+    for exam in exams:
+        exam = dict(exam.to_mongo())
+        exam.pop('_id')
+        ret.append(exam)
+    return Res(0, exams = ret)
+
+@rmap.register_request('/exam/newAttempt')
+@authlib.authDec('attempt_creation')
+@Arg(examID=str, uID=str)
+def newAttempt(examID, uID):
+    exam = core.GetExamByExamID(examID=examID)
+    if exam:
+        attemptID = core.newAttempt(examID=examID, uID=uID)
+        if attemptID:
+            return Res(0, attemptID=attemptID)
+        else:
+            return Res(-1, 'Failed to create the attempt')
+
+@rmap.register_request('/exam/deleteAttempt')
+@authlib.authDec('attempt_write')
+@Arg(attemptID=str)
+def deleteAttempt(attemptID):
+    attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
+    if attempt:
+        if core.DeleteExamAttemptByAttemptID(attemptID=attemptID):
+            return Res(0)
+        return Res(-1, 'Failed to delete the attempt')
+    return Res(-701, 'Attempt does not exist')
+
+@rmap.register_request('/exam/getAttemptByAttemptID')
+@authlib.authDec('attempt_read')
+@Arg(attemptID=str)
+def getAttempt(attemptID):
+    attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
+    if attempt:
+        if core.DeleteExamAttemptByAttemptID(attemptID=attemptID):
+            return Res(0)
+        return Res(-1, 'Failed to delete the attempt')
+    return Res(-701, 'Attempt does not exist')
+
+@rmap.register_request('/exam/editAttempt')
+@authlib.authDec('attempt_write')
+@Arg(attemptID=str, properties=json.loads)
+def editAttempt(attemptID, properties = '{}'):
+    if 'timeStarted' in properties or 'timeCompleted' in properties:
+        return Res(-400, 'For security reasons, you may not edit those properties')
+    
+    attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
+    success = []
+    failed = []
+
+    if attempt:
+        for prop in properties:
+            if prop in attempt:
+                setattr(attempt, prop, properties[prop])
+                success.append(prop)
+            else:
+                failed.append(prop)
+            try:
+                attempt.save()
+            except:
+                return Res(-1, 'Failed to edit the attempt')        
+        return Res(0, success = success, failed = failed)
+    return Res(-701, 'Exam does not exist')
+
+@rmap.register_request('/exam/getExamAttemptsInProgress')
+@authlib.authDec('verify_token')
+@Arg()
+def getExamAttemptsInProgress(uID):
+    exams = core.GetExamAttemptsInProgress(uID)
+    ret = []
+    for exam in exams:
+        exam = dict(exam.to_mongo())
+        exam.pop('_id')
+        ret.append(exam)
+    return Res(0, exams = ret)
+
 @app.route('/appdirect/<path:path>')
 def appDirect(path):
     return redirect("documentx://" + path, code=302)
@@ -983,3 +1115,6 @@ def batch_request(batch):
 
 
 rmap.handle_flask(app)
+
+if __name__ == '__main__':
+    app.run(port=5001)
