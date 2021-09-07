@@ -82,6 +82,7 @@ class Exam(me.Document):
     createdBy = me.StringField()
     users = me.ListField(me.StringField())
     created = me.FloatField()
+    docID = me.StringField()
 
 class ExamAttempt(me.Document):
     attemptID = me.StringField(required=True, unique=True)
