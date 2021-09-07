@@ -1108,13 +1108,13 @@ def finishAttempt(attemptID, docID):
 @authlib.authDec('verify_token')
 @Arg()
 def getExamAttemptsInProgress(uID):
-    exams = core.GetExamAttemptsInProgress(uID)
+    attempts = core.GetExamAttemptsInProgress(uID)
     ret = []
-    for exam in exams:
-        exam = dict(exam.to_mongo())
-        exam.pop('_id')
-        ret.append(exam)
-    return Res(0, exams = ret)
+    for attempt in attempts:
+        attempt = dict(attempt.to_mongo())
+        attempt.pop('_id')
+        ret.append(attempt)
+    return Res(0, attempts = ret)
 
 @app.route('/appdirect/<path:path>')
 def appDirect(path):
