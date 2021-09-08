@@ -566,6 +566,10 @@ def exam_document_permission_check(uID, docID = None, properties = None, resourc
                     'code': -301,
                     'message': 'Document modification is detected, yet that document does not exist. For security reasons, the entire request is rejected.'
                 }
+    return {
+        'code': 0,
+        'message':'Permitted.'
+    }
     
 
 def exam_read(examID, uID):
