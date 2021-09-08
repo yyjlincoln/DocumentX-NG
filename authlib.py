@@ -493,7 +493,8 @@ def exam_write(examID, uID):
         'message': 'Exam does not exist'
     }
 
-def exam_document_permission_check(uID, docID = None, properties = None):
+def exam_document_permission_check(uID, docID = None, properties = None, resourcesAvailableAfterLastAttempt = None):
+    # Check for the post-exam resource permissions [TODO]
     if properties:
         try:
             properties = json.loads(properties)
@@ -507,28 +508,64 @@ def exam_document_permission_check(uID, docID = None, properties = None):
             docID = properties['docID']
             doc = core.GetDocByDocID(docID)
             if not doc:
-                return Res(**{
+                return {
                     'code': -301,
                     'message': 'Document modification is detected, yet that document does not exist. For security reasons, the entire request is rejected.'
-                })
+                }
             if doc.owner != uID:
-                return Res(**{
+                return {
                     'code': -400,
                     'message': 'You can not use a document that\'s not yours.'
-                })
+                }
+        if 'resourcesAvailableAfterLastAttempt' in properties:
+            for docID in properties['resourcesAvailableAfterLastAttempt']:
+                doc = core.GetDocByDocID(docID)
+                if doc:
+                    if doc.owner != uID:
+                        return {
+                            'code': -400,
+                            'message': 'You can not use a document that\'s not yours. Offending document: ' + docID
+                        }
+                else:
+                    return {
+                        'code': -301,
+                        'message': 'Document modification is detected, yet that document does not exist. For security reasons, the entire request is rejected.'
+                    }
     if docID:
         doc = core.GetDocByDocID(docID)
         if not doc:
-            return Res(**{
+            return {
                 'code': -301,
                 'message': 'Document does not exist.'
-            })
+            }
         if doc.owner != uID:
-            return Res(**{
+            return {
                 'code': -400,
                 'message': 'You can not create an exam, using a document that\'s not yours.'
-            })
-    
+            }
+    if resourcesAvailableAfterLastAttempt:
+        try:
+            resourcesAvailableAfterLastAttempt = json.loads(resourcesAvailableAfterLastAttempt)
+            assert isinstance(resourcesAvailableAfterLastAttempt, list)
+        except:
+            return {
+                'code': -1,
+                'message': 'Could not perform security check as resourcesAvailableAfterLastAttempt can not be parsed as a JSON, or resourcesAvailableAfterLastAttempt is not a list.'
+            }
+
+        for docID in resourcesAvailableAfterLastAttempt:
+            doc = core.GetDocByDocID(docID)
+            if doc:
+                if doc.owner != uID:
+                    return {
+                        'code': -400,
+                        'message': 'You can not use a document that\'s not yours. Offending document: ' + docID
+                    }
+            else:
+                return {
+                    'code': -301,
+                    'message': 'Document modification is detected, yet that document does not exist. For security reasons, the entire request is rejected.'
+                }
     
 
 def exam_read(examID, uID):

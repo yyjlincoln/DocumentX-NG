@@ -147,42 +147,9 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
 
 @rmap.register_request('/share')
 @authlib.authDec('doc_write')
-@Arg()
+@Arg(read = StringBool, write = StringBool)
 def shareDocument(uID, targetUID, docID, read='true', write='false'):
-    d = core.GetDocByDocID(docID)
-    read = True if read == 'true' else False
-    write = True if write == 'true' else False
-    if d:
-        try:
-            # Try if the policy for that user exists
-            for x in range(len(d.policies)-1, -1, -1):
-                if str(d.policies[x].uID).lower() == targetUID.lower():
-                    d.policies.pop(x)
-
-            if read or write:
-                d.policies.append(
-                    Policy(uID=targetUID, read=read, write=write))
-
-            d.save()
-            return Res(**{
-                'code': 0,
-                'result': {
-                    'targetUID': targetUID,
-                    'read': read,
-                    'write': write
-                }
-            })
-        except Exception as e:
-            print(e)
-            return Res(**{
-                'code': -1,
-                'message': 'Error'
-            })
-
-    return Res(**{
-        'code': -1,
-        'message': 'Error'
-    })
+    return Res(**core.shareDocument(targetUID, docID, read=read, write=write))
 
 
 @rmap.register_request('/getDocuments')
@@ -1125,6 +1092,23 @@ def finishAttempt(attemptID, docID = None):
             attempt.docID = docID
         attempt.timeCompleted = time.time()
         attempt.save()
+
+        # Now, check for any resources that would be available to the user after the exam is finished
+        exam = core.GetExamByExamID(attempt.examID)
+        if exam:
+            if len(core.GetUserExamAttempts(examID=attempt.examID, uID=attempt.uID)) >= exam.maxAttemptsAllowed:
+                shared = []
+                for docID in exam.resourcesAvailableAfterLastAttempt:
+                    doc = core.GetDocByDocID(docID=docID)
+                    if doc:
+                        if doc.owner == exam.createdBy:
+                            core.shareDocument(targetUID=attempt.uID, docID=docID, read=True, write=False)
+                            shared.append(docID)
+                if len(shared) > 0:
+                    return Res(200, resources = shared, alert = {
+                        'title':f'{str(len(shared))} resources have been made available to you.',
+                        'message':'Thanks for attempting this exam. You now have the access to those resources. Please find them in the Library.'
+                    })
         return Res(0)
     return Res(-701, 'Attempt does not exist')
 

@@ -1,4 +1,4 @@
-from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog, Exam, ExamAttempt
+from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog, Exam, ExamAttempt, Policy
 import time
 import random
 import hashlib
@@ -493,3 +493,37 @@ def newAttempt(uID, examID):
         print(e)
         return None
         
+
+def shareDocument(targetUID, docID, read=True, write=False):
+    d = GetDocByDocID(docID)
+    if d:
+        try:
+            # Try if the policy for that user exists
+            for x in range(len(d.policies)-1, -1, -1):
+                if str(d.policies[x].uID).lower() == targetUID.lower():
+                    d.policies.pop(x)
+
+            if read or write:
+                d.policies.append(
+                    Policy(uID=targetUID, read=read, write=write))
+
+            d.save()
+            return {
+                'code': 0,
+                'result': {
+                    'targetUID': targetUID,
+                    'read': read,
+                    'write': write
+                }
+            }
+        except Exception as e:
+            print(e)
+            return {
+                'code': -1,
+                'message': 'Error'
+            }
+
+    return {
+        'code': -1,
+        'message': 'Error'
+    }

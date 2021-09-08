@@ -82,6 +82,7 @@ class Exam(me.Document):
     users = me.ListField(me.StringField(), default=[])
     created = me.FloatField(required=True)
     docID = me.StringField(default='')
+    resourcesAvailableAfterLastAttempt = me.ListField(me.StringField(), default=[])
 
 class ExamAttempt(me.Document):
     attemptID = me.StringField(required=True, unique=True)
