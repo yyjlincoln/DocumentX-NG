@@ -660,7 +660,7 @@ levels = {
     'attempt_creation': [rolecheck, v_token, exam_read, attempt_creation, is_app_required_check],
     'attempt_write': [rolecheck, v_token, attempt_write, is_app_required_check],
     'attempt_read': [rolecheck, v_token, attempt_read, is_app_required_check],
-    'exam_creation': [rolecheck, v_token, exam_creation, is_app_required_check],
+    'exam_creation': [rolecheck, v_token, exam_creation, exam_document_permission_check, is_app_required_check],
     'exam_write': [rolecheck, v_token, exam_write, exam_document_permission_check, is_app_required_check],
     'exam_read': [rolecheck, v_token, exam_read, is_app_required_check],
     'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
