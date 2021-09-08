@@ -1106,11 +1106,11 @@ def finishAttempt(attemptID, docID = None):
                         core.shareDocument(targetUID=attempt.uID, docID=docID, read=True, write=False)
                         shared.append(docID)
                 if len(shared) > 0:
-                    return Res(200, resources = shared, alert = {
+                    return Res(200, message='Successfully updated.', resources = shared, alert = {
                         'title':f'{str(len(shared))} resources have been made available to you.',
                         'message':'Thanks for attempting this exam. You now have the access to those resources. Please find them in the Library.'
                     })
-        return Res(0)
+        return Res(0, message='Successfully updated.')
     return Res(-701, 'Attempt does not exist')
 
 @rmap.register_request('/exam/getExamAttemptsInProgress')

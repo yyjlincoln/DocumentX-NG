@@ -52,5 +52,6 @@ def Res(code, message=None, __skip_batch=True, **kw):
             'message': message
         }, **kw})
     return _jsonify({**{
-        'code': code
+        'code': code,
+        'message':'<This API did not return any messages.>'
     }, **kw})
