@@ -1101,9 +1101,10 @@ def finishAttempt(attemptID, docID = None):
                 for docID in exam.resourcesAvailableAfterLastAttempt:
                     doc = core.GetDocByDocID(docID=docID)
                     if doc:
-                        if doc.owner == exam.createdBy:
-                            core.shareDocument(targetUID=attempt.uID, docID=docID, read=True, write=False)
-                            shared.append(docID)
+                        # if doc.owner == exam.createdBy:
+                        # # No longer checks the ownership before sharing. This is to ensure that after the document is transferred to another account, the exam would still work as expected.
+                        core.shareDocument(targetUID=attempt.uID, docID=docID, read=True, write=False)
+                        shared.append(docID)
                 if len(shared) > 0:
                     return Res(200, resources = shared, alert = {
                         'title':f'{str(len(shared))} resources have been made available to you.',

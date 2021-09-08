@@ -656,6 +656,7 @@ def exam_read(examID, uID):
     }
 
 levels = {
+    'exam_document_permission_check': [rolecheck, exam_document_permission_check],
     'attempt_creation': [rolecheck, v_token, exam_read, attempt_creation, is_app_required_check],
     'attempt_write': [rolecheck, v_token, attempt_write, is_app_required_check],
     'attempt_read': [rolecheck, v_token, attempt_read, is_app_required_check],
