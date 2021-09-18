@@ -387,17 +387,18 @@ def v_upload_permissions(uID):
     }
 
 
-def calculateAcceptableSignatures(uID, token):
+def calculateAcceptableSignatures(uID, token, apiversion = '0'):
     ts = int(time.time())
     signatures = []
-    # Acceptable time ranges: +- 10 seconds
-    for x in [ts - ts % 10 - 10, ts - ts % 10, ts + ts % 10]:
-        signatures.append(hashlib.sha256(str(uID.lower(
-        ) + token.lower() + str(x) + APP_SECRET).encode(encoding='utf-8')).hexdigest())
+    if apiversion in APP_SECRET:
+        # Acceptable time ranges: +- 10 seconds
+        for x in [ts - ts % 10 - 10, ts - ts % 10, ts + ts % 10]:
+            signatures.append(hashlib.sha256(str(uID.lower(
+            ) + token.lower() + str(x) + APP_SECRET[apiversion]).encode(encoding='utf-8')).hexdigest())
     return signatures
 
 
-def is_app_required_check(uID='', token='', accessedFrom='web', appSignature=''):
+def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='', apiversion=None):
     if not uID:
         # This should be fine, as any sensitive api will require auth and hence uID will not be ''
         return {
@@ -412,7 +413,7 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='')
                     'code': -600,
                     'message': 'Please upgrade your app to the latest version from TestFlight.'
                 }
-            if appSignature not in calculateAcceptableSignatures(uID, token):
+            if appSignature not in calculateAcceptableSignatures(uID, token, apiversion = apiversion):
                 return {
                     'code': -601,
                     'message': 'Invalid or empty signature.'
@@ -435,7 +436,7 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='')
         }
 
 
-def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID=''):            
+def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID='', apiversion = None):            
     if docID:
         if core.GetDocByDocID(docID).accessLevel == 'publicAppOnly' or core.GetDocByDocID(docID).accessLevel == 'privateAppOnly' or (core.GetUserByID(uID) and core.GetUserByID(uID).role == 'ViewInAppOnly'):
             
@@ -445,7 +446,7 @@ def document_access_app_check(uID='', token='', accessedFrom='web', appSignature
                     'message': 'This document may only be accessed in the DocumentX App.'
                 }
 
-            if appSignature not in calculateAcceptableSignatures(uID, token):
+            if appSignature not in calculateAcceptableSignatures(uID, token, apiversion = apiversion):
                 return {
                     'code': -601,
                     'message': 'Invalid or empty signature.'
