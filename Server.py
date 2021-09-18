@@ -62,6 +62,17 @@ _windows_device_files = (
 SAFE_CHARACTERS = ['.', '_', '%', '!', ' ',
                    '《', '》', '、', '&', '^', '$', '#', '-', '，']
 
+DEPRECATION_WARNING = {
+    '0': {
+        'code': 200,
+        'response':{
+            'alert':{
+                'title':'Please upgrade your app from TestFlight',
+                'message':'A critical upgrade had been released. This version of the app will soon be deprecated.'
+            }
+        }
+    }
+}
 
 def secure_filename(name):
     name = name.replace('/', '_')
@@ -643,8 +654,12 @@ def GetResourceGroupByID(uID, resID):
 @rmap.register_request('/getUIColorScheme')
 @authlib.authDec('public')
 @Arg()
-def GetUIColorScheme():
+def GetUIColorScheme(apiversion = '0'):
+    # [IMPORTANT] This is also the entry point of the program.
     r = core.GetUIColorScheme()
+    if apiversion in DEPRECATION_WARNING:
+        return Res(DEPRECATION_WARNING[apiversion]['code'], message="Succeeded with warning", colorscheme=r, **DEPRECATION_WARNING[apiversion]['response'])
+
     return Res(code=0, message="Success", colorscheme=r)
 
 @rmap.register_request('/newResourceGroup')

@@ -656,22 +656,31 @@ def exam_read(examID, uID):
         'message': 'Exam does not exist'
     }
 
+def apiversioncheck(accessedFrom = 'web', apiversion = '0'):
+    if accessedFrom != 'web':
+        if apiversion not in APP_SECRET:
+            return {
+                'code': -1,
+                'message': 'This version of the app is no longer supported. Please upgrade it from TestFlight.'
+            }
+
+
 levels = {
-    'exam_document_permission_check': [rolecheck, exam_document_permission_check],
-    'attempt_creation': [rolecheck, v_token, exam_read, attempt_creation, is_app_required_check],
-    'attempt_write': [rolecheck, v_token, attempt_write, is_app_required_check],
-    'attempt_read': [rolecheck, v_token, attempt_read, is_app_required_check],
-    'exam_creation': [rolecheck, v_token, exam_creation, exam_document_permission_check, is_app_required_check],
-    'exam_write': [rolecheck, v_token, exam_write, exam_document_permission_check, is_app_required_check],
-    'exam_read': [rolecheck, v_token, exam_read, is_app_required_check],
-    'document_access': [document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
-    'document_download': [document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check, document_access_app_check],
-    'doc_read': [rolecheck, doc_read, is_app_required_check],
-    'doc_write': [rolecheck, doc_write, is_app_required_check],
-    'verify_token': [v_token, is_app_required_check],
-    'login': [_password, is_app_required_check],
-    'verify_upload': [rolecheck, v_token, v_upload_permissions], # Don't check is_app_required as upload would take a long time
-    'elevated': [_password, v_token, is_app_required_check],
-    'sudo_only': [rolecheck, deny_all],
-    'public': [allow_all]
+    'exam_document_permission_check': [apiversioncheck, rolecheck, exam_document_permission_check],
+    'attempt_creation': [apiversioncheck, rolecheck, v_token, exam_read, attempt_creation, is_app_required_check],
+    'attempt_write': [apiversioncheck, rolecheck, v_token, attempt_write, is_app_required_check],
+    'attempt_read': [apiversioncheck, rolecheck, v_token, attempt_read, is_app_required_check],
+    'exam_creation': [apiversioncheck, rolecheck, v_token, exam_creation, exam_document_permission_check, is_app_required_check],
+    'exam_write': [apiversioncheck, rolecheck, v_token, exam_write, exam_document_permission_check, is_app_required_check],
+    'exam_read': [apiversioncheck, rolecheck, v_token, exam_read, is_app_required_check],
+    'document_access': [apiversioncheck, document_access_log, rolecheck, doc_read, is_app_required_check, document_access_app_check],
+    'document_download': [apiversioncheck, document_access_log, download_ua_check, rolecheck, doc_read, is_app_required_check, document_access_app_check],
+    'doc_read': [apiversioncheck, rolecheck, doc_read, is_app_required_check],
+    'doc_write': [apiversioncheck, rolecheck, doc_write, is_app_required_check],
+    'verify_token': [apiversioncheck, v_token, is_app_required_check],
+    'login': [apiversioncheck, _password, is_app_required_check],
+    'verify_upload': [apiversioncheck, rolecheck, v_token, v_upload_permissions], # Don't check is_app_required as upload would take a long time
+    'elevated': [apiversioncheck, _password, v_token, is_app_required_check],
+    'sudo_only': [apiversioncheck, rolecheck, deny_all],
+    'public': [apiversioncheck, allow_all]
 }
