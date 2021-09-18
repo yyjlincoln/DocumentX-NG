@@ -663,6 +663,10 @@ def apiversioncheck(accessedFrom = 'web', apiversion = '0'):
                 'code': -1,
                 'message': 'This version of the app is no longer supported. Please upgrade it from TestFlight.'
             }
+    return {
+        'code':0,
+        'message':'APIVersionCheck succeded'
+    }
 
 
 levels = {
