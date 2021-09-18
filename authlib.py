@@ -398,7 +398,7 @@ def calculateAcceptableSignatures(uID, token, apiversion = '0'):
     return signatures
 
 
-def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='', apiversion=None):
+def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='', apiversion='0'):
     if not uID:
         # This should be fine, as any sensitive api will require auth and hence uID will not be ''
         return {
@@ -436,7 +436,7 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='',
         }
 
 
-def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID='', apiversion = None):            
+def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID='', apiversion = '0'):            
     if docID:
         if core.GetDocByDocID(docID).accessLevel == 'publicAppOnly' or core.GetDocByDocID(docID).accessLevel == 'privateAppOnly' or (core.GetUserByID(uID) and core.GetUserByID(uID).role == 'ViewInAppOnly'):
             
