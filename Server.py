@@ -15,7 +15,7 @@ import authlib
 import filestore
 from utils.AutoArguments import Arg
 from utils.RequestMapping import RequestMap
-from utils.ResponseModule import Res
+from utils.ResponseModule import Res, ResponseAutoDepricationWarning
 from utils.AutoArgValidators import StringBool
 
 # Initialize app
@@ -62,17 +62,6 @@ _windows_device_files = (
 SAFE_CHARACTERS = ['.', '_', '%', '!', ' ',
                    '《', '》', '、', '&', '^', '$', '#', '-', '，']
 
-DEPRECATION_WARNING = {
-    '0': {
-        'code': 200,
-        'response':{
-            'alert':{
-                'title':'Please upgrade your app from TestFlight',
-                'message':'A critical upgrade had been released. This version of the app will soon be deprecated.'
-            }
-        }
-    }
-}
 
 def secure_filename(name):
     name = name.replace('/', '_')
@@ -158,7 +147,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
 
 @rmap.register_request('/share')
 @authlib.authDec('doc_write')
-@Arg(read = StringBool, write = StringBool)
+@Arg(read=StringBool, write=StringBool)
 def shareDocument(uID, targetUID, docID, read='true', write='false'):
     return Res(**core.shareDocument(targetUID, docID, read=read, write=write))
 
@@ -583,7 +572,7 @@ def GenerateQR(urlEncoded):
 @rmap.register_request('/login')
 @authlib.authDec('login')
 @Arg()
-def login(uID):
+def login(uID, apiversion='0'):
     # Get name
     u = core.GetUserByID(uID)
     if not u:
@@ -592,13 +581,7 @@ def login(uID):
             'message': 'User does not exist'
         }
     r = core.GetUserToken(uID)
-    return Res(**{
-        'code': r['code'],
-        'uID': u.uID,
-        'message': r['message'],
-        'token': r['token'],
-        'name': u.name
-    })
+    return ResponseAutoDepricationWarning(apiversion, r['code'], uID=u.uID, message=r['message'], token=r['token'], name=u.name)
 
 
 @rmap.register_request('/register')
@@ -654,13 +637,11 @@ def GetResourceGroupByID(uID, resID):
 @rmap.register_request('/getUIColorScheme')
 @authlib.authDec('public')
 @Arg()
-def GetUIColorScheme(apiversion = '0'):
+def GetUIColorScheme(apiversion='0'):
     # [IMPORTANT] This is also the entry point of the program.
     r = core.GetUIColorScheme()
-    if apiversion in DEPRECATION_WARNING:
-        return Res(DEPRECATION_WARNING[apiversion]['code'], message="Succeeded with warning", colorscheme=r, **DEPRECATION_WARNING[apiversion]['response'])
+    return ResponseAutoDepricationWarning(apiversion, code=0, message="Success", colorscheme=r)
 
-    return Res(code=0, message="Success", colorscheme=r)
 
 @rmap.register_request('/newResourceGroup')
 @authlib.authDec('verify_token')
@@ -953,12 +934,14 @@ def getLogsByUID(targetUID):
 @rmap.register_request('/exam/newExam')
 @authlib.authDec('exam_creation')
 @Arg(maxTimeAllowed=float, name=str, maxAttemptsAllowed=int, examID=str, users=json.loads)
-def newExam(uID, name, maxTimeAllowed, maxAttemptsAllowed=1, examID='', users = '[]', docID=''):        
-    eID = core.newExam(name=name, createdBy=uID, maxTimeAllowed=maxTimeAllowed, maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, users=users, docID=docID)
+def newExam(uID, name, maxTimeAllowed, maxAttemptsAllowed=1, examID='', users='[]', docID=''):
+    eID = core.newExam(name=name, createdBy=uID, maxTimeAllowed=maxTimeAllowed,
+                       maxAttemptsAllowed=maxAttemptsAllowed, examID=examID, users=users, docID=docID)
     if eID:
         return Res(0, examID=eID)
     else:
         return Res(-1, 'Failed to create the exam')
+
 
 @rmap.register_request('/exam/deleteExam')
 @authlib.authDec('exam_write')
@@ -971,10 +954,11 @@ def deleteExam(examID):
         return Res(-1, 'Failed to delete the exam')
     return Res(-701, 'Exam does not exist')
 
+
 @rmap.register_request('/exam/editExam')
 @authlib.authDec('exam_write')
 @Arg(examID=str, properties=json.loads)
-def editExam(uID, examID, properties = '{}'):
+def editExam(uID, examID, properties='{}'):
     exam = core.GetExamByExamID(examID=examID)
     success = []
     failed = []
@@ -989,9 +973,10 @@ def editExam(uID, examID, properties = '{}'):
             try:
                 exam.save()
             except:
-                return Res(-1, 'Failed to edit the exam')        
-        return Res(0, success = success, failed = failed)
+                return Res(-1, 'Failed to edit the exam')
+        return Res(0, success=success, failed=failed)
     return Res(-701, 'Exam does not exist')
+
 
 @rmap.register_request('/exam/getExamByExamID')
 @authlib.authDec('exam_read')
@@ -1001,23 +986,25 @@ def getExamByID(uID, examID):
     if exam:
         exam = dict(exam.to_mongo())
         exam.pop('_id')
-        exam['attemptsNum'] = len(core.GetUserExamAttempts(examID=exam['examID'], uID=uID))
-        return Res(0, exam = exam)
+        exam['attemptsNum'] = len(
+            core.GetUserExamAttempts(examID=exam['examID'], uID=uID))
+        return Res(0, exam=exam)
     return Res(-701, 'Exam does not exist')
 
 
 @rmap.register_request('/exam/getExamsByUID')
 @authlib.authDec('verify_token')
-@Arg(onlyAttemptable = StringBool)
+@Arg(onlyAttemptable=StringBool)
 def getExamsByUID(uID, onlyAttemptable='true'):
     exams = core.GetExamsByUID(uID, onlyAttemptable=onlyAttemptable)
     ret = []
     for exam in exams:
         exam = dict(exam.to_mongo())
         exam.pop('_id')
-        exam['attemptsNum'] = len(core.GetUserExamAttempts(examID=exam['examID'], uID=uID))
+        exam['attemptsNum'] = len(
+            core.GetUserExamAttempts(examID=exam['examID'], uID=uID))
         ret.append(exam)
-    return Res(0, exams = ret)
+    return Res(0, exams=ret)
 
 
 @rmap.register_request('/exam/newAttempt')
@@ -1032,6 +1019,7 @@ def newAttempt(examID, uID):
         else:
             return Res(-1, 'Failed to create the attempt')
 
+
 @rmap.register_request('/exam/deleteAttempt')
 @authlib.authDec('attempt_write')
 @Arg(attemptID=str)
@@ -1042,6 +1030,7 @@ def deleteAttempt(attemptID):
             return Res(0)
         return Res(-1, 'Failed to delete the attempt')
     return Res(-701, 'Attempt does not exist')
+
 
 def AddExamInfoToAttempt(attemptDict: Dict) -> Dict:
     if 'examID' in attemptDict:
@@ -1060,6 +1049,7 @@ def AddExamInfoToAttempt(attemptDict: Dict) -> Dict:
             }
     return attemptDict
 
+
 @rmap.register_request('/exam/getAttemptByAttemptID')
 @authlib.authDec('attempt_read')
 @Arg(attemptID=str)
@@ -1068,16 +1058,17 @@ def getAttempt(attemptID):
     if attempt:
         attempt = dict(attempt.to_mongo())
         attempt.pop('_id')
-        return Res(0, attempt = AddExamInfoToAttempt(attempt))
+        return Res(0, attempt=AddExamInfoToAttempt(attempt))
     return Res(-701, 'Attempt does not exist')
+
 
 @rmap.register_request('/exam/editAttempt')
 @authlib.authDec('attempt_write')
 @Arg(attemptID=str, properties=json.loads)
-def editAttempt(attemptID, properties = '{}'):
+def editAttempt(attemptID, properties='{}'):
     if 'timeStarted' in properties or 'timeCompleted' in properties or 'completed'in properties:
         return Res(-400, 'For security reasons, you may not edit those properties')
-    
+
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
     success = []
     failed = []
@@ -1092,14 +1083,15 @@ def editAttempt(attemptID, properties = '{}'):
             try:
                 attempt.save()
             except:
-                return Res(-1, 'Failed to edit the attempt')        
-        return Res(0, success = success, failed = failed)
+                return Res(-1, 'Failed to edit the attempt')
+        return Res(0, success=success, failed=failed)
     return Res(-701, 'Exam does not exist')
+
 
 @rmap.register_request('/exam/finishAttempt')
 @authlib.authDec('attempt_write')
 @Arg(attemptID=str)
-def finishAttempt(attemptID, docID = None):
+def finishAttempt(attemptID, docID=None):
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
     if attempt:
         attempt.completed = True
@@ -1118,15 +1110,17 @@ def finishAttempt(attemptID, docID = None):
                     if doc:
                         # if doc.owner == exam.createdBy:
                         # # No longer checks the ownership before sharing. This is to ensure that after the document is transferred to another account, the exam would still work as expected.
-                        core.shareDocument(targetUID=attempt.uID, docID=docID, read=True, write=False)
+                        core.shareDocument(
+                            targetUID=attempt.uID, docID=docID, read=True, write=False)
                         shared.append(docID)
                 if len(shared) > 0:
-                    return Res(1200, message='Successfully updated.', resources = shared, alert = {
-                        'title':f'{str(len(shared))} resources have been made available to you.',
-                        'message':'Thanks for attempting this exam. You now have the access to those resources. Please find them in the Library.'
+                    return Res(1200, message='Successfully updated.', resources=shared, alert={
+                        'title': f'{str(len(shared))} resources have been made available to you.',
+                        'message': 'Thanks for attempting this exam. You now have the access to those resources. Please find them in the Library.'
                     })
         return Res(0, message='Successfully updated.')
     return Res(-701, 'Attempt does not exist')
+
 
 @rmap.register_request('/exam/getExamAttemptsInProgress')
 @authlib.authDec('verify_token')
@@ -1138,7 +1132,8 @@ def getExamAttemptsInProgress(uID):
         attempt = dict(attempt.to_mongo())
         attempt.pop('_id')
         ret.append(AddExamInfoToAttempt(attempt))
-    return Res(0, attempts = ret)
+    return Res(0, attempts=ret)
+
 
 @rmap.register_request('/exam/getExamAttemptsByUID')
 @authlib.authDec('verify_token')
@@ -1150,7 +1145,8 @@ def getExamAttemptsByUID(uID, examID=None):
         attempt = dict(attempt.to_mongo())
         attempt.pop('_id')
         ret.append(AddExamInfoToAttempt(attempt))
-    return Res(0, attempts = ret)
+    return Res(0, attempts=ret)
+
 
 @app.route('/appdirect/<path:path>')
 def appDirect(path):
