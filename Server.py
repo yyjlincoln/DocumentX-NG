@@ -15,7 +15,7 @@ import authlib
 import filestore
 from utils.AutoArguments import Arg
 from utils.RequestMapping import RequestMap
-from utils.ResponseModule import Res, ResponseAutoDepricationWarning
+from utils.ResponseModule import Res, ResponseAutoDeprecationWarning
 from utils.AutoArgValidators import StringBool
 
 # Initialize app
@@ -572,7 +572,7 @@ def GenerateQR(urlEncoded):
 @rmap.register_request('/login')
 @authlib.authDec('login')
 @Arg()
-def login(uID, apiversion='0'):
+def login(uID, apiversion='0', accessedFrom = 'web'):
     # Get name
     u = core.GetUserByID(uID)
     if not u:
@@ -581,7 +581,9 @@ def login(uID, apiversion='0'):
             'message': 'User does not exist'
         }
     r = core.GetUserToken(uID)
-    return ResponseAutoDepricationWarning(apiversion, r['code'], uID=u.uID, message=r['message'], token=r['token'], name=u.name)
+    if accessedFrom != 'web':
+        return ResponseAutoDeprecationWarning(apiversion, r['code'], uID=u.uID, message=r['message'], token=r['token'], name=u.name)
+    return Res(r['code'], uID=u.uID, message=r['message'], token=r['token'], name=u.name)
 
 
 @rmap.register_request('/register')

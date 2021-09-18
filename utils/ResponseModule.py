@@ -70,7 +70,7 @@ def Res(code, message=None, __skip_batch=True, **kw):
         'message':'<This API did not return any messages.>'
     }, **kw})
 
-def ResponseAutoDepricationWarning(apiversion, code = 0, message = 'Success', **kw):
+def ResponseAutoDeprecationWarning(apiversion, code = 0, message = 'Success', **kw):
     if apiversion in DEPRECATION_WARNING:
         kw.update(DEPRECATION_WARNING[apiversion]['response'])
         return Res(DEPRECATION_WARNING[apiversion]['code'], message="Succeeded with warning", **kw)
