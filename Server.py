@@ -640,7 +640,7 @@ def GetResourceGroupByID(uID, resID):
 def GetUIColorScheme(apiversion='0'):
     # [IMPORTANT] This is also the entry point of the program.
     r = core.GetUIColorScheme()
-    return Res(apiversion, code=0, message="Success", colorscheme=r) 
+    return Res(code=0, message="Success", colorscheme=r) 
 
 
 @rmap.register_request('/newResourceGroup')
