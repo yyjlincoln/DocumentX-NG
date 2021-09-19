@@ -20,6 +20,20 @@ _ExceptionDefinitions = {
     -20001: 'RequestMap could not map the route {route} to a valid endpoint.'
 }
 
+
+DEPRECATION_WARNING = {
+    '0': {
+        'code': 200,
+        'response':{
+            'alert':{
+                'title':'Please upgrade your app from TestFlight',
+                'message':'A critical upgrade had been released. This version of the app will soon be deprecated.'
+            }
+        }
+    }
+}
+
+
 # Client-side exception bouncing
 
 
@@ -55,3 +69,9 @@ def Res(code, message=None, __skip_batch=True, **kw):
         'code': code,
         'message':'<This API did not return any messages.>'
     }, **kw})
+
+def ResponseAutoDeprecationWarning(apiversion, code = 0, message = 'Success', **kw):
+    if apiversion in DEPRECATION_WARNING:
+        kw.update(DEPRECATION_WARNING[apiversion]['response'])
+        return Res(DEPRECATION_WARNING[apiversion]['code'], message="Succeeded with warning", **kw)
+    return Res(code=0, message=message, **kw)
