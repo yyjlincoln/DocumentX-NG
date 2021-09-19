@@ -1,7 +1,7 @@
 import io
 import os
 
-FILESTORAGE = '/etc/docx/fs'
+FILESTORAGE = '/applications/documentx-storage'
 
 def newStorageLocation(docID):
     return os.path.join(FILESTORAGE, docID)
