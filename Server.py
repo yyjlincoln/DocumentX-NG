@@ -402,7 +402,7 @@ def deleteDocumentByID(docID):
         'result': core.DeleteDocs(docID)
     })
 
-# The authentication has been removed since this function has been depriciated.
+# The authentication has been removed since this function has been deprecated.
 
 
 @rmap.register_request('/viewDocumentByID')

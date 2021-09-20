@@ -30,6 +30,15 @@ DEPRECATION_WARNING = {
                 'message':'A critical upgrade had been released. This version of the app will soon be deprecated.'
             }
         }
+    },
+    'mac-1.0.0': {
+        'code': 1200,
+        'response':{
+            'alert':{
+                'title':'Please upgrade your app.',
+                'message':'A critical upgrade had been released. This version of the app will soon be deprecated.\n\nThe update can be found at https://yyjlincoln.com/documentx/mac/downloads'
+            }
+        }
     }
 }
 
