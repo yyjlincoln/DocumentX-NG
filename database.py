@@ -71,6 +71,7 @@ class AccessLog(me.Document):
     event = me.StringField()
     docID = me.StringField()
     time = me.FloatField()
+    json = me.DictField()
 
 
 class Exam(me.Document):

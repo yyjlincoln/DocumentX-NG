@@ -1,7 +1,7 @@
 from typing import Dict
 from flask import Flask, request, jsonify, redirect, send_file, Response
 from flask_mongoengine import MongoEngine
-from database import Document, User, Policy
+from database import AccessLog, Document, User, Policy
 import core
 import os
 import qrcode
@@ -572,7 +572,7 @@ def GenerateQR(urlEncoded):
 @rmap.register_request('/login')
 @authlib.authDec('login')
 @Arg()
-def login(uID, apiversion='0', accessedFrom = 'web'):
+def login(uID, apiversion='0', accessedFrom='web'):
     # Get name
     u = core.GetUserByID(uID)
     if not u:
@@ -642,7 +642,7 @@ def GetResourceGroupByID(uID, resID):
 def GetUIColorScheme(apiversion='0'):
     # [IMPORTANT] This is also the entry point of the program.
     r = core.GetUIColorScheme()
-    return Res(code=0, message="Success", colorscheme=r) 
+    return Res(code=0, message="Success", colorscheme=r)
 
 
 @rmap.register_request('/newResourceGroup')
@@ -1148,6 +1148,30 @@ def getExamAttemptsByUID(uID, examID=None):
         attempt.pop('_id')
         ret.append(AddExamInfoToAttempt(attempt))
     return Res(0, attempts=ret)
+
+
+@rmap.register_request('/log/appAbnormalExits')
+@authlib.authDec('public')
+@Arg(event=json.loads, timeReported = float)
+def logAppAbnormalExits(timeReported='0', event='{}', uID='', token='', appSignature='', apiversion='0'):
+    sig = authlib.auth('signature_check', kw={
+        'uID': uID,
+        'token': token,
+        'appSignature': appSignature,
+        'apiversion': apiversion
+    })
+    signature_status = True if sig['code'] == 0 else False
+    log = AccessLog(uID=uID, time=timeReported, event="AppAbnormalExit", json = {
+        'report': event,
+        'signature_status': signature_status,
+        'apiversion': apiversion
+    })
+    try:
+        log.save()
+    except:
+        return Res(-1, 'Failed to log the event')
+
+    return Res(0, 'Succeeded')
 
 
 @app.route('/appdirect/<path:path>')

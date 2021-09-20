@@ -668,6 +668,24 @@ def apiversioncheck(accessedFrom = 'web', apiversion = '0'):
         'message':'APIVersionCheck succeded'
     }
 
+def signature_check(uID='', token='', appSignature='', apiversion='0'):
+    if not uID:
+        # This should be fine, as any sensitive api will require auth and hence uID will not be ''
+        return {
+            'code': -401,
+            'message': 'Signature could not be verified. Please identify the user by supplying a uID parameter.'
+        }
+
+    if appSignature not in calculateAcceptableSignatures(uID, token, apiversion = apiversion):
+        return {
+            'code': -601,
+            'message': 'Invalid or empty signature.'
+        }
+    return {
+        'code': 0,
+        'message': 'Signature verified.'
+    }
+
 
 levels = {
     'exam_document_permission_check': [apiversioncheck, rolecheck, exam_document_permission_check],
@@ -686,5 +704,6 @@ levels = {
     'verify_upload': [apiversioncheck, rolecheck, v_token, v_upload_permissions], # Don't check is_app_required as upload would take a long time
     'elevated': [apiversioncheck, _password, v_token, is_app_required_check],
     'sudo_only': [apiversioncheck, rolecheck, deny_all],
-    'public': [apiversioncheck, allow_all]
+    'public': [apiversioncheck, allow_all],
+    'signature_check': [apiversioncheck, signature_check]
 }
