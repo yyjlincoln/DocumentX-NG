@@ -36,7 +36,7 @@ DEPRECATION_WARNING = {
         'response':{
             'alert':{
                 'title':'Please upgrade your app.',
-                'message':'A critical upgrade had been released. This version of the app will soon be deprecated.\n\nThe update can be found at https://static.nowask.me/documentx/mac-1.14.1.zip'
+                'message':'A critical upgrade had been released. This version of the app will soon be deprecated.\n\nThe update can be found at https://yyjlincoln.com/portfolio/documentx-ios'
             }
         }
     }
