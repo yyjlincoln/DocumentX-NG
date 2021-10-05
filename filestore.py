@@ -71,9 +71,9 @@ def clearCache(docID):
         for name in files:
             # Get uploading and uploadfailure files
             if name.endswith('.uploading'):
-                avoid.append(name[-10])
+                avoid.append(name[:-10])
             elif name.endswith('.uploadfailure'):
-                avoid.append(name[-14])
+                avoid.append(name[:-14])
 
         for name in files:
             if name not in avoid:
