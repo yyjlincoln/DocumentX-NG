@@ -5,7 +5,7 @@ import time
 
 gateway: Gateway
 
-CACHE_PATH = '/tmp/documentx'
+CACHE_PATH = '/etc/documentx'
 
 
 def uploadFileFromCache(docID):
