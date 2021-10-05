@@ -138,7 +138,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     filename = secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
-    r = filestore.SaveFile(docID, f.read())
+    r = filestore.saveFile(docID, f.read())
     if not r:
         return Res(-1, 'failed to save file')
     # f.save(filestore.newStorageLocation(docID))
