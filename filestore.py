@@ -23,6 +23,7 @@ def saveFile(docID, content):
         f.write(str(time.time()))
     t = threading.Thread(target=uploadFileFromCache, args=(docID,))
     t.start()
+    return True
 
 
 def renameFile(docID, newID) -> bool:
