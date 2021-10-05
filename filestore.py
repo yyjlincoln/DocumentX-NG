@@ -1,39 +1,34 @@
-import io
+from s3gateway import gateway, Gateway
 import os
 
-FILESTORAGE = '/etc/docx/fs'
+gateway: Gateway
 
-def newStorageLocation(docID):
-    return os.path.join(FILESTORAGE, docID)
-
-def getStorageLocation(docID):
-    return os.path.join(FILESTORAGE, docID)
+CACHE_PATH = '/tmp/documentx'
 
 def saveFile(docID, content):
-    path = newStorageLocation(docID)
-    try:
-        with open(path, 'wb') as f:
-            f.write(content)
-        return True
-    except:
-        return False
-
+    gateway.uploadFile(docID, content)
 
 def renameFile(docID, newID) -> bool:
-    oldPath = getStorageLocation(docID)
-    newPath = getStorageLocation(newID)
-    try:
-        os.rename(oldPath, newPath)
-        return True
-    except:
-        return False
+    # oldPath = getStorageLocation(docID)
+    # newPath = getStorageLocation(newID)
+    # try:
+    #     os.rename(oldPath, newPath)
+    #     return True
+    # except:
+    #     return False
+    raise Exception("Not implemented")
 
 def deleteFile(docID):
-    path = getStorageLocation(docID)
+    gateway.deleteFile(docID)
+
+def getFileLink(docID):
+    return gateway.getURL(docID, expiresIn=30)
+
+def getStorageLocation(docID):
+    path = os.path.join(CACHE_PATH, docID)
     if os.path.exists(path) and os.path.isfile(path):
-        try:
-            os.remove(path)
-            return True
-        except:
-            return False
-    
+        return path
+    if gateway.downloadFile(docID, path):
+        return path
+    else:
+        raise Exception("File not found")

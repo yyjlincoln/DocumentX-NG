@@ -141,7 +141,6 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     r = filestore.saveFile(docID, f.read())
     if not r:
         return Res(-1, 'failed to save file')
-    # f.save(filestore.newStorageLocation(docID))
     return Res(**{
         'code': rst,
         'docID': docID
