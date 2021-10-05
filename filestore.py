@@ -16,6 +16,7 @@ def uploadFileFromCache(docID):
             with open(os.path.join(CACHE_PATH, docID + '.uploadfailure'), 'w') as f:
                 f.write(str(time.time()))
 
+
 def saveFile(docID, content):
     with open(os.path.join(CACHE_PATH, docID), 'wb') as f:
         f.write(content)
@@ -44,6 +45,7 @@ def deleteFile(docID):
     except:
         pass
 
+
 def getFileLink(docID):
     return gateway.getURL(docID, expiresIn=30)
 
@@ -59,14 +61,17 @@ def getStorageLocation(docID):
     else:
         raise Exception("File not found")
 
+
 def clearCache(docID):
     if len(listFiles(CACHE_PATH)) > 100:
         files = listFiles(CACHE_PATH)
         clean = []
+
         for name in files:
             if not name.endswith('.uploading') and not name.endswith('.uploadfailure') and name != docID:
-                clean.append(name)
-        
+                if not os.path.exists(os.path.join(CACHE_PATH, name + '.uploading')) and not os.path.exists(os.path.join(CACHE_PATH, name + '.uploadfailure')):
+                    clean.append(name)
+
         for name in clean:
             os.remove(os.path.join(CACHE_PATH, name))
 
