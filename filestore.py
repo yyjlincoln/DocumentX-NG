@@ -39,7 +39,10 @@ def renameFile(docID, newID) -> bool:
 
 def deleteFile(docID):
     gateway.deleteFile(docID)
-
+    try:
+        os.remove(os.path.join(CACHE_PATH, docID))
+    except:
+        pass
 
 def getFileLink(docID):
     return gateway.getURL(docID, expiresIn=30)
@@ -47,9 +50,30 @@ def getFileLink(docID):
 
 def getStorageLocation(docID):
     path = os.path.join(CACHE_PATH, docID)
+    # Clears cache
+    clearCache(docID)
     if os.path.exists(path) and os.path.isfile(path):
         return path
     if gateway.downloadFile(docID, path):
         return path
     else:
         raise Exception("File not found")
+
+def clearCache(docID):
+    if len(listFiles(CACHE_PATH)) > 100:
+        files = listFiles(CACHE_PATH)
+        clean = []
+        for name in files:
+            if not name.endswith('.uploading') and not name.endswith('.uploadfailure') and name != docID:
+                clean.append(name)
+        
+        for name in clean:
+            os.remove(os.path.join(CACHE_PATH, name))
+
+
+def listFiles(path) -> list:
+    files = []
+    for name in os.listdir(path):
+        if os.path.isfile(os.path.join(path, name)):
+            files.append(name)
+    return files
