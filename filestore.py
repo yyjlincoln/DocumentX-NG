@@ -66,14 +66,18 @@ def clearCache(docID):
     if len(listFiles(CACHE_PATH)) > 100:
         files = listFiles(CACHE_PATH)
         clean = []
+        avoid = [docID]
 
         for name in files:
-            if not name.endswith('.uploading') and not name.endswith('.uploadfailure') and name != docID:
-                if not os.path.exists(os.path.join(CACHE_PATH, name + '.uploading')) and not os.path.exists(os.path.join(CACHE_PATH, name + '.uploadfailure')):
-                    clean.append(name)
+            # Get uploading and uploadfailure files
+            if name.endswith('.uploading'):
+                avoid.append(name[-10])
+            elif name.endswith('.uploadfailure'):
+                avoid.append(name[-14])
 
-        for name in clean:
-            os.remove(os.path.join(CACHE_PATH, name))
+        for name in files:
+            if name not in avoid:
+                os.remove(os.path.join(CACHE_PATH, name))
 
 
 def listFiles(path) -> list:
