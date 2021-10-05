@@ -138,7 +138,10 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     filename = secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
-    f.save(filestore.newStorageLocation(docID))
+    r = filestore.SaveFile(docID, f.read())
+    if not r:
+        return Res(-1, 'failed to save file')
+    # f.save(filestore.newStorageLocation(docID))
     return Res(**{
         'code': rst,
         'docID': docID
@@ -395,8 +398,7 @@ def getDocumentsByName(uID, name, start='0', end='50'):
 @authlib.authDec('doc_write')
 @Arg()
 def deleteDocumentByID(docID):
-    if os.path.exists(filestore.getStorageLocation(docID)) and os.path.isfile(filestore.getStorageLocation(docID)):
-        os.remove(filestore.getStorageLocation(docID))
+    filestore.deleteFile(docID)
     return Res(**{
         'code': 0,
         'result': core.DeleteDocs(docID)
@@ -483,6 +485,8 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
         return GeneralErrorHandler(-1, 'properties should be a dictionary.')
     if 'fileName' in properties:
         return GeneralErrorHandler(-1, "field fileName is protected and can not be changed over the API.")
+    if 'docID' in properties:    
+        return GeneralErrorHandler(-1, 'you can not change the docID.')
 
     success = []
     failed = []
@@ -494,35 +498,9 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
         else:
             failed.append(prop)
 
-    if 'docID' in properties:
-        try:
-            if filestore.getStorageLocation(docID):
-                os.rename(filestore.getStorageLocation(docID),
-                          filestore.newStorageLocation(properties['docID']))
-            else:
-                raise Exception('Could not save the file')
-        except:
-            return GeneralErrorHandler(-1, 'Failed to move the file')
-
-        # Also, change the DocumentProperties
-        d = core.GetAllDocumentProperties(docID=docID)
-        for x in d:
-            try:
-                x.docID = properties['docID']
-                x.save()
-            except:
-                print('Warn: Could not change docID in DocumentProperties.')
     try:
         doc.save()
     except:
-        if 'docID' in properties:
-            try:
-                # Rollback
-                os.rename(filestore.getStorageLocation(
-                    properties['docID']), filestore.newStorageLocation(docID))
-            except:
-                pass
-
         return GeneralErrorHandler(-302, 'Failed to save to the database.')
 
     return Res(**{
