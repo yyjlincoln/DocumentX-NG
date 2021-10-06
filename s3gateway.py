@@ -11,53 +11,43 @@ class Gateway():
                                      aws_access_key_id=key,
                                      aws_secret_access_key=secret)
 
-    def uploadFile(self, filename: str, body: bytes):
-        s = self.client.put_object(Bucket='documentx',
+    def uploadFile(self, filename: str, body: bytes, bucket = 'documentx'):
+        s = self.client.put_object(Bucket=bucket,
                                    Key=filename,
                                    Body=body,
                                    ACL='private')
         return s['ResponseMetadata']['HTTPStatusCode'] == 200
 
-    def getURL(self, filename: str, expiresIn: int = 300):
+    def getURL(self, filename: str, expiresIn: int = 300, bucket = 'documentx'):
         url = self.client.generate_presigned_url(ClientMethod='get_object',
-                                                 Params={'Bucket': 'documentx',
+                                                 Params={'Bucket': bucket,
                                                          'Key': filename},
                                                  ExpiresIn=expiresIn)
 
         return url
 
-    def deleteFile(self, filename: str):
-        s = self.client.delete_object(Bucket='documentx',
+    def deleteFile(self, filename: str, bucket = 'documentx'):
+        s = self.client.delete_object(Bucket= bucket,
                                       Key=filename)
         return s['ResponseMetadata']['HTTPStatusCode'] == 204
 
-    def listFiles(self):
-        response = self.client.list_objects(Bucket='documentx')
+    def listFiles(self, bucket = 'documentx'):
+        response = self.client.list_objects(Bucket=bucket)
         keys = []
         if 'Contents' in response:
             for obj in response['Contents']:
                 keys.append(obj['Key'])
         return keys
     
-    def downloadFile(self, filename: str, path):
+    def downloadFile(self, filename: str, path, bucket = 'documentx'):
         try:
-            self.client.download_file('documentx',
+            self.client.download_file(bucket,
                         filename,
                         path)
             return True
         except Exception as e:
             print(e)
             return False
-        
-
-
-    # def renameFile(self, oldName: str, newName: str):
-    #     s = self.client.copy_object(Bucket='documentx',
-    #                                 CopySource=oldName,     
-    #                                 Key=newName,
-    #                                 ACL='private')
-    #     self.deleteFile(oldName)
-    # it's not working properly
 
 import json
 import os
