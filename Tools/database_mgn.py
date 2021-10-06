@@ -4,7 +4,6 @@ class Token(me.EmbeddedDocument):
     expires = me.FloatField()
     token = me.StringField()
 
-
 class Policy(me.EmbeddedDocument):
     uID = me.StringField(default=None)
     group = me.StringField(default=None)
@@ -70,7 +69,28 @@ class AccessLog(me.Document):
     event = me.StringField()
     docID = me.StringField()
     time = me.FloatField()
+    json = me.DictField()
 
+
+class Exam(me.Document):
+    examID = me.StringField(required=True, unique=True)
+    name = me.StringField(required=True)
+    maxTimeAllowed = me.FloatField(required=True) # in seconds
+    maxAttemptsAllowed = me.IntField(required=True, default = 1)
+    createdBy = me.StringField(required=True)
+    users = me.ListField(me.StringField(), default=[])
+    created = me.FloatField(required=True)
+    docID = me.StringField(default='')
+    resourcesAvailableAfterLastAttempt = me.ListField(me.StringField(), default=[])
+
+class ExamAttempt(me.Document):
+    attemptID = me.StringField(required=True, unique=True)
+    examID = me.StringField(required=True)
+    uID = me.StringField(required=True)
+    timeStarted = me.FloatField(required=True)
+    completed = me.BooleanField(default=False)
+    timeCompleted = me.FloatField()
+    docID = me.StringField() # Exam attempt file
 
 
 me.connect('documentx')
