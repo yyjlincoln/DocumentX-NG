@@ -7,7 +7,6 @@ import os
 import qrcode
 import base64
 import io
-from flask_cors import CORS
 import json
 import time
 import secrets
@@ -20,7 +19,6 @@ from utils.AutoArgValidators import StringBool
 
 # Initialize app
 app = Flask(__name__)
-CORS(app)
 
 # Define a connection to the database
 db = MongoEngine()
