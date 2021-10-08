@@ -21,6 +21,7 @@ class User(me.Document):
     currentTokens = me.EmbeddedDocumentListField(Token, default=[])
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     tokenMaxAge = me.FloatField()
+    salt = me.StringField()
 
 
 class Document(me.Document):

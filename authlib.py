@@ -1,3 +1,4 @@
+from secrets import token_hex
 from database import User
 from flask import jsonify, request
 import inspect
@@ -97,9 +98,27 @@ def document_access_log(docID, uID=None, accessedFrom='web'):
 
 def _password(uID, password, accessedFrom='web'):
     u = core.GetUserByID(uID)
+        # Hash and salt password, even though it'd already been hashed by the client (sha-256)
     if u:
+        salt = u.salt
+        if salt:
+            password = hashlib.sha256(str(password + salt)).hexdigest()
+
         if u.password == password:
             core.Log(uID=uID, event='password-login.success:'+accessedFrom)
+            # Apply salt if it hadn't been applied before
+            if not salt:
+                salt = token_hex(32)
+                u.password = hashlib.sha256(str(password + salt)).hexdigest()
+                u.salt = salt
+                try:
+                    u.save()
+                except:
+                    return {
+                        'code': -500,
+                        'message': 'Internal server error: Could update salt.'
+                    }
+        
             return {
                 'code': 0,
                 'uid': u.uID,
