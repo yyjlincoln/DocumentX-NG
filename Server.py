@@ -482,7 +482,7 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
         return GeneralErrorHandler(-1, 'properties should be a dictionary.')
     if 'fileName' in properties:
         return GeneralErrorHandler(-1, "field fileName is protected and can not be changed over the API.")
-    if 'docID' in properties:    
+    if 'docID' in properties and properties['docID'] != docID:
         return GeneralErrorHandler(-1, 'you can not change the docID.')
 
     success = []
