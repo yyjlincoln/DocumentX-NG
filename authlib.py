@@ -102,14 +102,14 @@ def _password(uID, password, accessedFrom='web'):
     if u:
         salt = u.salt
         if salt:
-            password = hashlib.sha256(str(password + salt)).hexdigest()
+            password = hashlib.sha256(str(password + salt).encode('utf-8')).hexdigest()
 
         if u.password == password:
             core.Log(uID=uID, event='password-login.success:'+accessedFrom)
             # Apply salt if it hadn't been applied before
             if not salt:
                 salt = token_hex(32)
-                u.password = hashlib.sha256(str(password + salt)).hexdigest()
+                u.password = hashlib.sha256(str(password + salt).encode('utf-8')).hexdigest()
                 u.salt = salt
                 try:
                     u.save()
