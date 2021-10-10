@@ -98,18 +98,20 @@ def document_access_log(docID, uID=None, accessedFrom='web'):
 
 def _password(uID, password, accessedFrom='web'):
     u = core.GetUserByID(uID)
-        # Hash and salt password, even though it'd already been hashed by the client (sha-256)
+    # Hash and salt password, even though it'd already been hashed by the client (sha-256)
     if u:
         salt = u.salt
         if salt:
-            password = hashlib.sha256(str(password + salt).encode('utf-8')).hexdigest()
+            password = hashlib.sha256(
+                str(password + salt).encode('utf-8')).hexdigest()
 
         if u.password == password:
             core.Log(uID=uID, event='password-login.success:'+accessedFrom)
             # Apply salt if it hadn't been applied before
             if not salt:
                 salt = token_hex(32)
-                u.password = hashlib.sha256(str(password + salt).encode('utf-8')).hexdigest()
+                u.password = hashlib.sha256(
+                    str(password + salt).encode('utf-8')).hexdigest()
                 u.salt = salt
                 try:
                     u.save()
@@ -118,7 +120,7 @@ def _password(uID, password, accessedFrom='web'):
                         'code': -500,
                         'message': 'Internal server error: Could update salt.'
                     }
-        
+
             return {
                 'code': 0,
                 'uid': u.uID,
@@ -255,7 +257,7 @@ def doc_access_v_token(uID=None, token=None):
     }
 
 
-def doc_read(docID=None, uID=None, token=None, attemptID=None):
+def doc_read(docID=None, uID=None, token=None, attemptID=None, _internal_no_auth=False):
     if docID:
         d = core.GetDocByDocID(docID)
         if d:
@@ -266,9 +268,10 @@ def doc_read(docID=None, uID=None, token=None, attemptID=None):
                 }
             else:
                 # Not public - auth
-                authresult = doc_access_v_token(uID, token)
-                if authresult['code'] != 0:
-                    return authresult
+                if not _internal_no_auth:
+                    authresult = doc_access_v_token(uID, token)
+                    if authresult['code'] != 0:
+                        return authresult
                 # Check permission
                 if str(d.owner.lower()) == str(uID).lower():
                     return {
@@ -379,16 +382,28 @@ def rolecheck(uID=None, token=None):
                 'message': 'Not sudo - login verification failed'
             }
 
-        u = core.GetUserByID(uID)
-        if u:
-            if u.role == 'sudo' or u.role == 'root':
-                return Operation.SkipAll({
-                    'code': 1001,
-                    'message': 'Sudo user'
-                })
+        if _is_sudo(uID)['code'] == 0:
+            return Operation.SkipAll({
+                'code': 1001,
+                'message': 'Sudo user'
+            })
     return {
         'code': 0,
         'message': 'Sudo check - not sudo'
+    }
+
+
+def _is_sudo(uID):
+    u = core.GetUserByID(uID)
+    if u:
+        if u.role == 'sudo' or u.role == 'root':
+            return {
+                'code': 0,
+                'message': 'Sudo user'
+            }
+    return {
+        'code': -1,
+        'message': 'Not sudo'
     }
 
 
@@ -406,7 +421,7 @@ def v_upload_permissions(uID):
     }
 
 
-def calculateAcceptableSignatures(uID, token, apiversion = '0'):
+def calculateAcceptableSignatures(uID, token, apiversion='0'):
     ts = int(time.time())
     signatures = []
     if apiversion in APP_SECRET:
@@ -432,7 +447,7 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='',
                     'code': -600,
                     'message': 'Please upgrade your app to the latest version from TestFlight.'
                 }
-            if appSignature not in calculateAcceptableSignatures(uID, token, apiversion = apiversion):
+            if appSignature not in calculateAcceptableSignatures(uID, token, apiversion=apiversion):
                 return {
                     'code': -601,
                     'message': 'Invalid or empty signature.'
@@ -455,28 +470,26 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='',
         }
 
 
-def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID='', apiversion = '0'):            
+def document_access_app_check(uID='', token='', accessedFrom='web', appSignature='', docID='', apiversion='0'):
     if docID:
         if core.GetDocByDocID(docID).accessLevel == 'publicAppOnly' or core.GetDocByDocID(docID).accessLevel == 'privateAppOnly' or (core.GetUserByID(uID) and core.GetUserByID(uID).role == 'ViewInAppOnly'):
-            
+
             if accessedFrom.split('/')[0] != 'DocumentXAccess':
                 return {
                     'code': -600,
                     'message': 'This document may only be accessed in the DocumentX App.'
                 }
 
-            if appSignature not in calculateAcceptableSignatures(uID, token, apiversion = apiversion):
+            if appSignature not in calculateAcceptableSignatures(uID, token, apiversion=apiversion):
                 return {
                     'code': -601,
                     'message': 'Invalid or empty signature.'
                 }
-            
+
     return {
         'code': 0,
         'message': 'Access is permitted.'
     }
-        
-
 
 
 def deny_all():
@@ -485,17 +498,20 @@ def deny_all():
         'message': 'Access is denied.'
     }
 
+
 def allow_all():
     return {
         'code': 0,
         'message': 'Allowed'
     }
 
+
 def exam_creation():
     return {
         'code': 0,
         'message': 'Allowed'
     }
+
 
 def exam_write(examID, uID):
     if core.GetExamByExamID(examID):
@@ -507,13 +523,14 @@ def exam_write(examID, uID):
         return {
             'code': -400,
             'message': 'You do not have the right to make changes to this exam.'
-        }        
+        }
     return {
         'code': -701,
         'message': 'Exam does not exist'
     }
 
-def exam_document_permission_check(uID, docID = None, properties = None, resourcesAvailableAfterLastAttempt = None):
+
+def exam_document_permission_check(uID, docID=None, properties=None, resourcesAvailableAfterLastAttempt=None):
     # Check for the post-exam resource permissions [TODO]
     if properties:
         try:
@@ -565,7 +582,8 @@ def exam_document_permission_check(uID, docID = None, properties = None, resourc
             }
     if resourcesAvailableAfterLastAttempt:
         try:
-            resourcesAvailableAfterLastAttempt = json.loads(resourcesAvailableAfterLastAttempt)
+            resourcesAvailableAfterLastAttempt = json.loads(
+                resourcesAvailableAfterLastAttempt)
             assert isinstance(resourcesAvailableAfterLastAttempt, list)
         except:
             return {
@@ -588,18 +606,18 @@ def exam_document_permission_check(uID, docID = None, properties = None, resourc
                 }
     return {
         'code': 0,
-        'message':'Permitted.'
+        'message': 'Permitted.'
     }
-    
+
 
 def exam_read(examID, uID):
     exam = core.GetExamByExamID(examID)
     if exam:
-        if uID in exam.users or uID == exam.createdBy or core.GetUserExamAttempts(uID, examID)!=[]:
+        if uID in exam.users or uID == exam.createdBy or core.GetUserExamAttempts(uID, examID) != []:
             return {
                 'code': 0,
                 'message': 'Allowed'
-            }        
+            }
         return {
             'code': -400,
             'message': 'You do not have read access to this exam.'
@@ -609,19 +627,20 @@ def exam_read(examID, uID):
         'message': 'Exam does not exist'
     }
 
+
 def attempt_creation(examID, uID):
     exam = core.GetExamByExamID(examID=examID)
     if exam:
         if len(core.GetUserExamAttempts(uID=uID, examID=examID)) >= exam.maxAttemptsAllowed:
             return {
-                'code':-702,
-                'message':'You have reached the maximum number of attempts for this exam.'
+                'code': -702,
+                'message': 'You have reached the maximum number of attempts for this exam.'
             }
         return {
-            'code':0,
-            'message':'Permitted.'
+            'code': 0,
+            'message': 'Permitted.'
         }
-    
+
 
 def attempt_read(attemptID, uID):
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
@@ -639,6 +658,7 @@ def attempt_read(attemptID, uID):
         'code': -701,
         'message': 'Attempt does not exist'
     }
+
 
 def attempt_write(attemptID, uID):
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
@@ -661,11 +681,11 @@ def attempt_write(attemptID, uID):
 def exam_read(examID, uID):
     exam = core.GetExamByExamID(examID)
     if exam:
-        if uID in exam.users or uID == exam.createdBy or core.GetUserExamAttempts(uID, examID)!=[]:
+        if uID in exam.users or uID == exam.createdBy or core.GetUserExamAttempts(uID, examID) != []:
             return {
                 'code': 0,
                 'message': 'Allowed'
-            }        
+            }
         return {
             'code': -400,
             'message': 'You do not have read access to this exam.'
@@ -675,7 +695,8 @@ def exam_read(examID, uID):
         'message': 'Exam does not exist'
     }
 
-def apiversioncheck(accessedFrom = 'web', apiversion = '0'):
+
+def apiversioncheck(accessedFrom='web', apiversion='0'):
     if accessedFrom != 'web':
         if apiversion not in APP_SECRET:
             return {
@@ -683,9 +704,10 @@ def apiversioncheck(accessedFrom = 'web', apiversion = '0'):
                 'message': 'This version of the app is no longer supported. Please upgrade it from TestFlight.'
             }
     return {
-        'code':0,
-        'message':'APIVersionCheck succeded'
+        'code': 0,
+        'message': 'APIVersionCheck succeded'
     }
+
 
 def signature_check(uID='', token='', appSignature='', apiversion='0'):
     if not uID:
@@ -695,7 +717,7 @@ def signature_check(uID='', token='', appSignature='', apiversion='0'):
             'message': 'Signature could not be verified. Please identify the user by supplying a uID parameter.'
         }
 
-    if appSignature not in calculateAcceptableSignatures(uID, token, apiversion = apiversion):
+    if appSignature not in calculateAcceptableSignatures(uID, token, apiversion=apiversion):
         return {
             'code': -601,
             'message': 'Invalid or empty signature.'
@@ -720,9 +742,10 @@ levels = {
     'doc_write': [apiversioncheck, rolecheck, doc_write, is_app_required_check],
     'verify_token': [apiversioncheck, v_token, is_app_required_check],
     'login': [apiversioncheck, _password, is_app_required_check],
-    'verify_upload': [apiversioncheck, rolecheck, v_token, v_upload_permissions], # Don't check is_app_required as upload would take a long time
+    # Don't check is_app_required as upload would take a long time
+    'verify_upload': [apiversioncheck, rolecheck, v_token, v_upload_permissions],
     'elevated': [apiversioncheck, _password, v_token, is_app_required_check],
     'sudo_only': [apiversioncheck, rolecheck, deny_all],
     'public': [apiversioncheck, allow_all],
-    'signature_check': [apiversioncheck, signature_check]
+    'signature_check': [apiversioncheck, signature_check],
 }

@@ -6,6 +6,7 @@ import base64
 import secrets
 from mongoengine.queryset.visitor import Q
 import json
+import authlib
 
 # Color schemes
 try:
@@ -549,3 +550,29 @@ def shareDocument(targetUID, docID, read=True, write=False):
         'code': -1,
         'message': 'Error'
     }
+
+
+def GetIfShareable(uID, docID):
+    if not uID:
+        # Prevents anonymous users from sharing
+        return False
+
+    if authlib._is_sudo(uID)['code'] == 0:
+        return True
+
+    u = GetUserByID(uID)
+    d = GetDocByDocID(docID)
+    # Checks the user role
+    if u:
+        if u.role == 'AppOnly' or u.role == 'ViewInAppOnly' or u.role == 'NoAppShare':
+            return False
+    # Checks the document accessLevel
+    if d:
+        if d.accessLevel == 'publicAppOnly' or d.accessLevel == 'privateAppOnly':
+            return False
+
+    # Checks the user's access to the document purely based on the document policy etc
+    if authlib.doc_read(docID=docID, uID=uID, _internal_no_auth=True)['code'] == 0:
+        return True
+
+    return False

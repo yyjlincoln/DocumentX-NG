@@ -187,11 +187,12 @@ def getDocuments(uID=None, status='active', start='0', end='50'):
 @rmap.register_request('/getDocumentByID')
 @authlib.authDec('doc_read')
 @Arg()
-def getDocumentByDocumentID(docID):
+def getDocumentByDocumentID(docID, uID=None):
     r = core.GetDocByDocID(docID)
     if r:
         r = r.to_mongo()
         r.pop('_id')
+        r['shareable'] = core.GetIfShareable(uID, docID)
         return Res(**{
             'code': 0,
             'result': r
@@ -1127,7 +1128,7 @@ def getExamAttemptsByUID(uID, examID=None):
 
 @rmap.register_request('/log/appAbnormalExits')
 @authlib.authDec('public')
-@Arg(event=json.loads, timeReported = float)
+@Arg(event=json.loads, timeReported=float)
 def logAppAbnormalExits(timeReported='0', event='{}', uID='', token='', appSignature='', apiversion='0'):
     sig = authlib.auth('signature_check', kw={
         'uID': uID,
@@ -1136,7 +1137,7 @@ def logAppAbnormalExits(timeReported='0', event='{}', uID='', token='', appSigna
         'apiversion': apiversion
     })
     signature_status = True if sig['code'] == 0 else False
-    log = AccessLog(uID=uID, time=timeReported, event="AppAbnormalExit", json = {
+    log = AccessLog(uID=uID, time=timeReported, event="AppAbnormalExit", json={
         'report': event,
         'signature_status': signature_status,
         'apiversion': apiversion
