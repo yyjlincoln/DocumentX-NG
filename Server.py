@@ -194,7 +194,7 @@ def getDocumentByDocumentID(docID, uID=None):
         r.pop('_id')
         r['shareable'] = core.GetIfShareable(uID, docID)
         r['sharename'] = secure_filename(
-            r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
+            r['name'] + '.' + r['fileName'].rsplit('.', 1)[-1].lower())
         return Res(**{
             'code': 0,
             'result': r
