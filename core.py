@@ -47,7 +47,7 @@ def secure_filename(filename):
             filename = filename.replace(sep, " ")
     _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_\u4E00-\u9FBF.-]')
     filename = str(_filename_ascii_strip_re.sub(
-        "", filename.split())).strip("._")
+        "", filename)).strip("._")
 
     # on nt a couple of special files are present in each folder.  We
     # have to ensure that the target file is not such a filename.  In
