@@ -45,7 +45,7 @@ def secure_filename(filename):
     for sep in os.path.sep, os.path.altsep:
         if sep:
             filename = filename.replace(sep, " ")
-    _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_\u4E00-\u9FBF.-]')
+    _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9 _\u4E00-\u9FBF.-]')
     filename = str(_filename_ascii_strip_re.sub(
         "", filename)).strip("._")
 
