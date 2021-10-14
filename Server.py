@@ -436,8 +436,7 @@ def getDocumentAccessToken(docID):
 def getDownloadLink(docID):
     r = core.GetDocByDocID(docID)
     if r:
-        redAddr = secure_filename(
-            r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
+        redAddr = core.GetDownloadName(docID)
         auth = core.GetAuthCode(docID)
         if auth:
             return Res(**{
@@ -456,8 +455,7 @@ def getPreviewLink(docID):
     r = core.GetDocByDocID(docID)
     if r:
         # redAddr = r.fileName
-        redAddr = secure_filename(
-            r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
+        redAddr = core.GetDownloadName(docID)
         auth = core.GetAuthCode(docID)
         if auth:
             return Res(**{
@@ -513,8 +511,10 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
 @app.route('/download/<path:path>')
 @Arg()
 def GetFile(docID, auth=None, path=None):
+    filename = core.GetDownloadName(docID, default='unknown')
     if core.ValidatePermission(docID, auth):
-        return send_file(filestore.getStorageLocation(docID))
+        return send_file(filestore.getStorageLocation(docID), download_name=filename)
+    
     # For download, we shall not redirect for re-authentication.
     return GeneralErrorHandler(-400, 'Access is denied'), 403
 
@@ -523,12 +523,13 @@ def GetFile(docID, auth=None, path=None):
 @Arg()
 def GetFilePreview(docID, auth=None, path=None):
     if core.ValidatePermission(docID, auth):
+        filename = core.GetDownloadName(docID, default='unknown')
         doc = core.GetDocByDocID(docID)
         extension = doc.fileName.rsplit('.', 1)[-1].lower()
         MIME = None
         if extension in EXTENSION_MIME:
             MIME = EXTENSION_MIME[extension]
-        return send_file(filestore.getStorageLocation(docID), mimetype=MIME)
+        return send_file(filestore.getStorageLocation(docID), mimetype=MIME, download_name=filename)
     # Attempts to re-authorize
     return redirect(FRONTEND_ROOT+'/view?docID='+docID)
     # return GeneralErrorHandler(-400, 'Access is denied'), 403

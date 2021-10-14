@@ -7,6 +7,7 @@ import secrets
 from mongoengine.queryset.visitor import Q
 import json
 import authlib
+from werkzeug.utils import secure_filename
 
 # Color schemes
 try:
@@ -131,6 +132,14 @@ def GetUserByID(uID):
         return u
     return None
 
+def GetDownloadName(docID, default = 'unknown'):
+    r = GetDocByDocID(docID)
+    if r:
+        filename = secure_filename(
+            r.name + '.' + r.fileName.rsplit('.', 1)[-1].lower())
+    else:
+        filename = default
+    return filename
 
 def ArchiveDocument(docID):
     d = GetDocByDocID(docID)
