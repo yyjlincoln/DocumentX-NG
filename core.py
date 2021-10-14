@@ -1,3 +1,6 @@
+import re
+import os
+import unicodedata
 from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog, Exam, ExamAttempt, Policy
 import time
 import random
@@ -7,7 +10,6 @@ import secrets
 from mongoengine.queryset.visitor import Q
 import json
 import authlib
-from werkzeug.utils import secure_filename
 
 # Color schemes
 try:
@@ -20,6 +22,40 @@ except:
 Auths = {}
 # MAX_TOKEN_AGE = 60*60*48 # 2 Days
 DEFAULT_MAX_TOKEN_AGE = 60*30  # 30 minutes - school use
+
+
+def secure_filename(filename):
+    # Modified from werkzeug.utils.secure_filename.
+    _windows_device_files = (
+        "CON",
+        "AUX",
+        "COM1",
+        "COM2",
+        "COM3",
+        "COM4",
+        "LPT1",
+        "LPT2",
+        "LPT3",
+        "PRN",
+        "NUL",
+    )
+    filename = unicodedata.normalize("NFKD", filename)
+    filename = filename.encode('utf-8', 'ignore').decode('utf-8')
+
+    for sep in os.path.sep, os.path.altsep:
+        if sep:
+            filename = filename.replace(sep, " ")
+    _filename_ascii_strip_re = re.compile(r'[^A-Za-z0-9_\u4E00-\u9FBF.-]')
+    filename = str(_filename_ascii_strip_re.sub(
+        "", filename.split())).strip("._")
+
+    # on nt a couple of special files are present in each folder.  We
+    # have to ensure that the target file is not such a filename.  In
+    # this case we prepend an underline
+    if (os.name == "nt" and filename and filename.split(".")[0].upper() in _windows_device_files):
+        filename = f"_{filename}"
+
+    return filename
 
 
 def Log(uID=None, event=None, docID=None):
@@ -132,7 +168,8 @@ def GetUserByID(uID):
         return u
     return None
 
-def GetDownloadName(docID, default = 'unknown'):
+
+def GetDownloadName(docID, default='unknown'):
     r = GetDocByDocID(docID)
     if r:
         filename = secure_filename(
@@ -140,6 +177,7 @@ def GetDownloadName(docID, default = 'unknown'):
     else:
         filename = default
     return filename
+
 
 def ArchiveDocument(docID):
     d = GetDocByDocID(docID)

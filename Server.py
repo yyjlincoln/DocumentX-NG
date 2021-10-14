@@ -43,34 +43,6 @@ EXTENSION_MIME = {
     'mp3': 'audio/mpeg'
 }
 
-_windows_device_files = (
-    "CON",
-    "AUX",
-    "COM1",
-    "COM2",
-    "COM3",
-    "COM4",
-    "LPT1",
-    "LPT2",
-    "LPT3",
-    "PRN",
-    "NUL",
-)
-
-SAFE_CHARACTERS = ['.', '_', '%', '!', ' ',
-                   '《', '》', '、', '&', '^', '$', '#', '-', '，']
-
-
-def secure_filename(name):
-    name = name.replace('/', '_')
-    n = "".join([c for c in name if c.isalpha() or c.isdigit()
-                 or c in SAFE_CHARACTERS]).rstrip()
-    if n not in _windows_device_files and n != '' and n != '.':
-        return n
-    else:
-        return 'InvalidFileName.File'
-
-
 def RequestErrorHandler(func, code, missing):
     return Res(**{
         'code': code,
@@ -133,7 +105,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
         return GeneralErrorHandler(-200, 'No file is uploaded.')
     if f and not allowedFile(f.filename):
         return GeneralErrorHandler(-201, 'Unsupported format')
-    filename = secure_filename(f.filename)
+    filename = core.secure_filename(f.filename)
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
     r = filestore.saveFile(docID, f.read())
@@ -193,8 +165,7 @@ def getDocumentByDocumentID(docID, uID=None):
         r = r.to_mongo()
         r.pop('_id')
         r['shareable'] = core.GetIfShareable(uID, docID)
-        r['sharename'] = secure_filename(
-            r['name'] + '.' + r['fileName'].rsplit('.', 1)[-1].lower())
+        r['sharename'] = core.GetDownloadName(docID)
         return Res(**{
             'code': 0,
             'result': r

@@ -3,7 +3,6 @@ import zmail
 import time
 import requests
 import io
-from werkzeug.utils import secure_filename
 from config import Config
 import base64
 import hashlib
