@@ -10,6 +10,8 @@ import secrets
 from mongoengine.queryset.visitor import Q
 import json
 import authlib
+import emaillib.core
+import emaillib.templates.general
 
 # Color schemes
 try:
@@ -311,6 +313,8 @@ def NewUser(uID, name, password, email):
         u = User(uID=uID, name=name, password=password,
                  dRegistered=time.time(), tokenMaxAge=DEFAULT_MAX_TOKEN_AGE, salt=salt, email=email)
         u.save()
+        # emaillib.core.sendEmail(emaillib.templates.general.LinkEmail, email)
+        # TODO: Write a secure mechanism to send the email and avoid spamming. Probably recaptcha?
         return {
             'code': 0,
             'message': 'Successfully registered.'
@@ -320,9 +324,6 @@ def NewUser(uID, name, password, email):
             'code': -1,
             'message': 'Failed to register.'
         }
-
-
-
 
 def GetDocuments(uID=None, archived=False, start=0, end=50):
     'archived: None - Return All Documents; True - Only return archived; False - Only not archived.'
@@ -344,6 +345,7 @@ def GetDocuments(uID=None, archived=False, start=0, end=50):
                 return Document.objects((Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)) & Q(archived=archived)).order_by('-dScanned')[start:end]
 
     return []
+
 
 
 def GetUIColorScheme():
