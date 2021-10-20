@@ -22,7 +22,8 @@ class User(me.Document):
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     tokenMaxAge = me.FloatField()
     salt = me.StringField()
-
+    email = me.EmailField(required=True)
+    activated = me.BooleanField(default=False)
 
 class Document(me.Document):
     name = me.StringField(required=True)

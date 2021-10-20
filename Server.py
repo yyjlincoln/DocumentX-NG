@@ -538,8 +538,8 @@ def login(uID, apiversion='0', accessedFrom='web'):
 
 @rmap.register_request('/register')
 @Arg()
-def register(uID, name, password):
-    return Res(**core.NewUser(uID, name, password))
+def register(uID, name, password, email):
+    return Res(**core.NewUser(uID, name, password, email))
 
 
 @rmap.register_request('/getAuthStatus')

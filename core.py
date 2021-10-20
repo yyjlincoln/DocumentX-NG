@@ -168,6 +168,12 @@ def GetUserByID(uID):
         return u
     return None
 
+def GetUserByEmail(uID):
+    u = User.objects(email__iexact=uID).first()
+    if u:
+        return u
+    return None
+
 
 def GetDownloadName(docID, default='unknown'):
     r = GetDocByDocID(docID)
@@ -291,7 +297,7 @@ def GetUserToken(uID, tokenMaxAge=None):
     }
 
 
-def NewUser(uID, name, password):
+def NewUser(uID, name, password, email):
     # Check if uID is unique
     if GetUserByID(uID):
         return {
@@ -303,7 +309,7 @@ def NewUser(uID, name, password):
     password = hashlib.sha256(str(password+salt).encode('utf-8')).hexdigest()
     try:
         u = User(uID=uID, name=name, password=password,
-                 dRegistered=time.time(), tokenMaxAge=DEFAULT_MAX_TOKEN_AGE, salt=salt)
+                 dRegistered=time.time(), tokenMaxAge=DEFAULT_MAX_TOKEN_AGE, salt=salt, email=email)
         u.save()
         return {
             'code': 0,
@@ -314,6 +320,8 @@ def NewUser(uID, name, password):
             'code': -1,
             'message': 'Failed to register.'
         }
+
+
 
 
 def GetDocuments(uID=None, archived=False, start=0, end=50):

@@ -1,4 +1,6 @@
 import mongoengine as me
+
+
 class Token(me.EmbeddedDocument):
     created = me.FloatField()
     expires = me.FloatField()
@@ -19,7 +21,9 @@ class User(me.Document):
     currentTokens = me.EmbeddedDocumentListField(Token, default=[])
     policies = me.EmbeddedDocumentListField(Policy, default=[])
     tokenMaxAge = me.FloatField()
-
+    salt = me.StringField()
+    email = me.EmailField()
+    activated = me.BooleanField(default=False)
 
 class Document(me.Document):
     name = me.StringField(required=True)
@@ -91,7 +95,3 @@ class ExamAttempt(me.Document):
     completed = me.BooleanField(default=False)
     timeCompleted = me.FloatField()
     docID = me.StringField() # Exam attempt file
-
-
-me.connect('documentx')
-
