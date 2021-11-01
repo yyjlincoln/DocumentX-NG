@@ -392,7 +392,6 @@ def rolecheck(uID=None, token=None):
         'message': 'Sudo check - not sudo'
     }
 
-
 def _is_sudo(uID):
     u = core.GetUserByID(uID)
     if u:
@@ -728,6 +727,7 @@ def signature_check(uID='', token='', appSignature='', apiversion='0'):
     }
 
 
+# TODO: Add account and token scopes (like NAM)
 levels = {
     'exam_document_permission_check': [apiversioncheck, rolecheck, exam_document_permission_check],
     'attempt_creation': [apiversioncheck, rolecheck, v_token, exam_read, attempt_creation, is_app_required_check],
