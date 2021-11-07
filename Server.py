@@ -43,6 +43,7 @@ EXTENSION_MIME = {
     'mp3': 'audio/mpeg'
 }
 
+
 def RequestErrorHandler(func, code, missing):
     return Res(**{
         'code': code,
@@ -375,6 +376,14 @@ def deleteDocumentByID(docID):
         'result': core.DeleteDocs(docID)
     })
 
+
+@rmap.register_request('/reportDocumentByID')
+@authlib.authDec('doc_read')
+@Arg()
+def reportDocumentByID(docID):
+    # Dummy function. TODO.
+    return Res(code=0)
+
 # The authentication has been removed since this function has been deprecated.
 
 
@@ -485,7 +494,7 @@ def GetFile(docID, auth=None, path=None):
     filename = core.GetDownloadName(docID, default='unknown')
     if core.ValidatePermission(docID, auth):
         return send_file(filestore.getStorageLocation(docID), download_name=filename)
-    
+
     # For download, we shall not redirect for re-authentication.
     return GeneralErrorHandler(-400, 'Access is denied'), 403
 
