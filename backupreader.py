@@ -1,6 +1,3 @@
-from os import supports_bytes_environ
-
-
 class DuplicateKeyError(Exception):
     def __init__(self, key: str, line: int=0):
         self.key = key
