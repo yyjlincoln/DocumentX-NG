@@ -528,6 +528,11 @@ def GenerateQR(urlEncoded):
     return Response(imgByteArr, mimetype='image/png')
 
 
+@rmap.register_request('/initialise')
+@Arg()
+def entrypoint():
+    return Res(0, 'OK')
+
 @rmap.register_request('/login')
 @authlib.authDec('login')
 @Arg()
