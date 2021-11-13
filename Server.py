@@ -615,7 +615,7 @@ def GetUIColorScheme(apiversion='0'):
 @authlib.authDec('verify_token')
 @Arg()
 def GetScript(scriptID=''):
-    scriptContent = script.GetScriptByID()
+    scriptContent = script.GetScriptByID(scriptID=scriptID)
     if scriptContent:
         return Res(code=0, message="Success", script=scriptContent)
     else:
