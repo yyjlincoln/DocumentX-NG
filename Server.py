@@ -16,6 +16,7 @@ from utils.AutoArguments import Arg
 from utils.RequestMapping import RequestMap
 from utils.ResponseModule import Res, ResponseAutoDeprecationWarning
 from utils.AutoArgValidators import StringBool
+import script
 
 # Initialize app
 app = Flask(__name__)
@@ -533,6 +534,7 @@ def GenerateQR(urlEncoded):
 def entrypoint():
     return Res(0, 'OK')
 
+
 @rmap.register_request('/login')
 @authlib.authDec('login')
 @Arg()
@@ -607,6 +609,17 @@ def GetUIColorScheme(apiversion='0'):
     # [IMPORTANT] This is also the entry point of the program.
     r = core.GetUIColorScheme()
     return Res(code=0, message="Success", colorscheme=r)
+
+
+@rmap.register_request('/getScript')
+@authlib.authDec('verify_token')
+@Arg()
+def GetScript(scriptID=''):
+    scriptContent = script.GetScriptByID()
+    if scriptContent:
+        return Res(code=0, message="Success", script=scriptContent)
+    else:
+        return Res(code=-1, message="The requested resource does not exist")
 
 
 @rmap.register_request('/newResourceGroup')
@@ -1032,7 +1045,7 @@ def getAttempt(attemptID):
 @authlib.authDec('attempt_write')
 @Arg(attemptID=str, properties=json.loads)
 def editAttempt(attemptID, properties='{}'):
-    if 'timeStarted' in properties or 'timeCompleted' in properties or 'completed'in properties:
+    if 'timeStarted' in properties or 'timeCompleted' in properties or 'completed' in properties:
         return Res(-400, 'For security reasons, you may not edit those properties')
 
     attempt = core.GetExamAttemptByAttemptID(attemptID=attemptID)
