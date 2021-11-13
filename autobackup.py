@@ -40,6 +40,7 @@ for kind in BACKUP:
         separator = token_hex(16)
         f.write('created='+str(time.time())+'\n')
         f.write('separator='+separator+'\n')
+        f.write('database='+kind+'\n')
         f.write('\r\n\r\n')
         for item in BACKUP[kind].objects():
             f.write(item.to_json())
