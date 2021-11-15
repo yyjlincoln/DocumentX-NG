@@ -568,7 +568,8 @@ def getAuthStatus(uID):
             'code': 0,
             'message': 'Auth ok',
             'name': u.name,
-            'uID': u.uID
+            'uID': u.uID,
+            'offline': u.offlineaccess
         }
     else:
         return {

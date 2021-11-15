@@ -24,6 +24,7 @@ class User(me.Document):
     salt = me.StringField()
     email = me.EmailField(required=True)
     activated = me.BooleanField(default=False)
+    offlineaccess = me.BooleanField(default=False)
 
 class Document(me.Document):
     name = me.StringField(required=True)
