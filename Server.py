@@ -652,7 +652,7 @@ def GetUIColorScheme(apiversion='0'):
 
 
 @rmap.register_request('/getScript')
-@authlib.authDec('verify_token')
+@authlib.authDec('public')
 @Arg()
 def GetScript(scriptID='', uID = None):
     Log(uID, 'getScript', {
