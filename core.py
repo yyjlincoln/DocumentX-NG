@@ -60,8 +60,8 @@ def secure_filename(filename):
     return filename
 
 
-def Log(uID=None, event=None, docID=None):
-    r = AccessLog(uID=uID, event=event, docID=docID, time=time.time())
+def Log(uID=None, event=None, docID=None, info = {}):
+    r = AccessLog(uID=uID, event=event, docID=docID, time=time.time(), json=info)
     r.save()
     for log in AccessLog.objects(time__lte=time.time()-1209600):
         # Clear any log that's more than 14 days

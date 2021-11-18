@@ -17,6 +17,7 @@ from utils.RequestMapping import RequestMap
 from utils.ResponseModule import Res, ResponseAutoDeprecationWarning
 from utils.AutoArgValidators import StringBool
 import script
+from core import Log
 
 # Initialize app
 app = Flask(__name__)
@@ -111,6 +112,7 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
     rst, docID = core.NewDocument(name=name, subject=subject, comments=comments,
                                   fileName=filename, desc=desc, status='Uploaded', docID=docID, owner=uID)
     r = filestore.saveFile(docID, f.read())
+    Log(uID, 'uploadDocument', docID)
     if not r:
         return Res(-1, 'failed to save file')
     return Res(**{
@@ -123,6 +125,11 @@ def uploadDocument(name, subject, uID, comments='', desc='', status='Recorded', 
 @authlib.authDec('doc_write')
 @Arg(read=StringBool, write=StringBool)
 def shareDocument(uID, targetUID, docID, read='true', write='false'):
+    Log(uID, 'shareDocument', docID, info={
+        'targetUID': targetUID,
+        'read': read,
+        'write': write
+    })
     return Res(**core.shareDocument(targetUID, docID, read=read, write=write))
 
 
@@ -130,6 +137,7 @@ def shareDocument(uID, targetUID, docID, read='true', write='false'):
 @authlib.authDec('verify_token')
 @Arg()
 def getDocuments(uID=None, status='active', start='0', end='50'):
+    Log(uID, 'getDocuments')
     try:
         start = int(start)
         end = int(end)
@@ -164,6 +172,7 @@ def getDocuments(uID=None, status='active', start='0', end='50'):
 def getDocumentByDocumentID(docID, uID=None):
     r = core.GetDocByDocID(docID)
     if r:
+        Log(uID, 'getDocumentByDocumentID', docID)
         r = r.to_mongo()
         r.pop('_id')
         r['shareable'] = core.GetIfShareable(uID, docID)
@@ -185,6 +194,7 @@ def getDocumentByDocumentID(docID, uID=None):
 @authlib.authDec('verify_token')
 @Arg()
 def searchDocumentsByID(uID, docID, start='0', end='50'):
+    Log(uID, 'searchDocumentsByID', docID)
     try:
         start = int(start)
         end = int(end)
@@ -210,6 +220,7 @@ def searchDocumentsByID(uID, docID, start='0', end='50'):
 @authlib.authDec('verify_token')
 @Arg()
 def getHashTags(uID):
+    Log(uID, 'getHashTags')
     r = core.GetUserHashTags(uID)
     return Res(**{
         'code': 0,
@@ -221,6 +232,9 @@ def getHashTags(uID):
 @authlib.authDec('verify_token')
 @Arg()
 def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
+    Log(uID, 'searchDocumentsByHashTag', info={
+        'hashTag': hashTag
+    })
     try:
         start = int(start)
         end = int(end)
@@ -246,6 +260,9 @@ def searchDocumentsByHashTag(uID, hashTag, start='0', end='50'):
 @authlib.authDec('verify_token')
 @Arg()
 def getDocumentsByHashTag(uID, hashTag, start='0', end='50'):
+    Log(uID, 'getDocumentsByHashTag', info={
+        'hashTag': hashTag
+    })
     try:
         start = int(start)
         end = int(end)
@@ -271,6 +288,9 @@ def getDocumentsByHashTag(uID, hashTag, start='0', end='50'):
 @authlib.authDec('verify_token')  # TODO change
 @Arg()
 def searchDocumentsBySubject(uID, subject, start='0', end='50'):
+    Log(uID, 'searchDocumentsBySubject', info={
+        'subject': subject
+    })
     try:
         start = int(start)
         end = int(end)
@@ -296,6 +316,9 @@ def searchDocumentsBySubject(uID, subject, start='0', end='50'):
 @authlib.authDec('verify_token')  # TODO change
 @Arg()
 def getDocumentsBySubject(uID, subject, start='0', end='50'):
+    Log(uID, 'getDocumentsBySubject', info={
+        'subject': subject
+    })
     try:
         start = int(start)
         end = int(end)
@@ -321,6 +344,9 @@ def getDocumentsBySubject(uID, subject, start='0', end='50'):
 @authlib.authDec('verify_token')  # TODO change
 @Arg()
 def searchDocumentsByName(uID, name, start='0', end='50'):
+    Log(uID, 'searchDocumentsByName', info={
+        'name': name
+    })
     try:
         start = int(start)
         end = int(end)
@@ -346,6 +372,9 @@ def searchDocumentsByName(uID, name, start='0', end='50'):
 @authlib.authDec('verify_token')  # TODO change
 @Arg()
 def getDocumentsByName(uID, name, start='0', end='50'):
+    Log(uID, 'getDocumentsByName', info={
+        'name': name
+    })
     try:
         start = int(start)
         end = int(end)
@@ -370,7 +399,8 @@ def getDocumentsByName(uID, name, start='0', end='50'):
 @rmap.register_request('/deleteDocumentByID')
 @authlib.authDec('doc_write')
 @Arg()
-def deleteDocumentByID(docID):
+def deleteDocumentByID(docID, uID=None):
+    Log(uID, 'deleteDocumentByID', docID)
     filestore.deleteFile(docID)
     return Res(**{
         'code': 0,
@@ -381,7 +411,8 @@ def deleteDocumentByID(docID):
 @rmap.register_request('/reportDocumentByID')
 @authlib.authDec('doc_read')
 @Arg()
-def reportDocumentByID(docID):
+def reportDocumentByID(docID, uID=None):
+    Log(uID, 'reportDocumentByID', docID)
     # Dummy function. TODO.
     return Res(code=0)
 
@@ -397,7 +428,7 @@ def viewDocumentByID(docID):
 @rmap.register_request('/getDocumentAccessToken')
 @authlib.authDec('document_access')
 @Arg()
-def getDocumentAccessToken(docID):
+def getDocumentAccessToken(docID, uID=None):
     r = core.GetDocByDocID(docID)
     if r:
         auth = core.GetAuthCode(docID)
@@ -467,6 +498,8 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
     if 'docID' in properties and properties['docID'] != docID:
         return GeneralErrorHandler(-1, 'you can not change the docID.')
 
+    Log(uID, 'editDocumentByID', docID, properties)
+
     success = []
     failed = []
 
@@ -531,7 +564,8 @@ def GenerateQR(urlEncoded):
 
 @rmap.register_request('/initialise')
 @Arg()
-def entrypoint():
+def entrypoint(uID = None):
+    Log(uID, 'appInitialise')
     return Res(0, 'OK')
 
 
@@ -555,6 +589,11 @@ def login(uID, apiversion='0', accessedFrom='web'):
 @rmap.register_request('/register')
 @Arg()
 def register(uID, name, password, email):
+    Log(uID, 'register', info={
+        'name': name,
+        'password': password,
+        'email': email
+    })
     return Res(**core.NewUser(uID, name, password, email))
 
 
@@ -615,7 +654,10 @@ def GetUIColorScheme(apiversion='0'):
 @rmap.register_request('/getScript')
 @authlib.authDec('verify_token')
 @Arg()
-def GetScript(scriptID=''):
+def GetScript(scriptID='', uID = None):
+    Log(uID, 'getScript', {
+        'scriptID': scriptID
+    })
     scriptContent = script.GetScriptByID(scriptID=scriptID)
     if scriptContent:
         return Res(code=0, message="Success", script=scriptContent)
