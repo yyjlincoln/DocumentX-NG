@@ -655,7 +655,7 @@ def GetUIColorScheme(apiversion='0'):
 @authlib.authDec('public')
 @Arg()
 def GetScript(scriptID='', uID = None):
-    Log(uID, 'getScript', {
+    Log(uID, 'getScript', info = {
         'scriptID': scriptID
     })
     scriptContent = script.GetScriptByID(scriptID=scriptID)
