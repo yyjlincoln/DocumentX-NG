@@ -17,6 +17,8 @@
 | -406       | Token has expired                                                       |
 | -500       | User-Agent Not Supported (General)                                      |
 | -501       | Wechat-UA Not Supported                                                 |
-| -600       | App required                                                            |
-| -701      | Exam does not exist                                                        |
-| -702      | You have reached your maximum attempts for this exam.                                                        |
+| -600       | Access method is not allowed                                            |
+| -601       | Invalid app signature                                                   |
+| -701       | Exam does not exist                                                     |
+| -702       | You have reached your maximum attempts for this exam.                   |
+| -1000      | Unsupported App Version                                                 |

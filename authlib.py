@@ -444,7 +444,7 @@ def is_app_required_check(uID='', token='', accessedFrom='web', appSignature='',
             if accessedFrom.split('/')[0] != 'DocumentXAccess':
                 return {
                     'code': -600,
-                    'message': 'Please upgrade your app to the latest version from TestFlight.'
+                    'message': 'This action may only be performed in the DocumentX App.'
                 }
             if appSignature not in calculateAcceptableSignatures(uID, token, apiversion=apiversion):
                 return {
@@ -700,7 +700,7 @@ def apiversioncheck(accessedFrom='web', apiversion='0'):
         if apiversion not in APP_SECRET:
             return {
                 'code': -1,
-                'message': 'This version of the app is no longer supported. Please upgrade it from TestFlight.'
+                'message': 'This version of the app is no longer supported. Please upgrade your app from the App Store.'
             }
     return {
         'code': 0,
