@@ -2,11 +2,15 @@ from s3gateway import gateway, Gateway
 import os
 import threading
 import time
+import json
 
 gateway: Gateway
 
 CACHE_PATH = '/etc/documentx'
-
+with open('secrets.json') as f:
+    config = json.load(f)
+    if 'cache' in config:
+        CACHE_PATH = config['cache']
 
 def uploadFileFromCache(docID):
     with open(os.path.join(CACHE_PATH, docID), 'rb') as f:
