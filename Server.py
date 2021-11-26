@@ -527,7 +527,7 @@ def editDocumentByID(docID, properties, elToken=None, uID=None):
 def GetFile(docID, auth=None, path=None):
     filename = core.GetDownloadName(docID, default='unknown')
     if core.ValidatePermission(docID, auth):
-        return send_file(filestore.getStorageLocation(docID), download_name=filename)
+        return send_file(filestore.getStorageLocation(docID), download_name=filename, as_attachment=True, mimetype='application/octet-stream')
 
     # For download, we shall not redirect for re-authentication.
     return GeneralErrorHandler(-400, 'Access is denied'), 403
@@ -564,7 +564,7 @@ def GenerateQR(urlEncoded):
 
 @rmap.register_request('/initialise')
 @Arg()
-def entrypoint(uID = None):
+def entrypoint(uID=None):
     Log(uID, 'appInitialise')
     return Res(0, 'OK')
 
@@ -654,8 +654,8 @@ def GetUIColorScheme(apiversion='0'):
 @rmap.register_request('/getScript')
 @authlib.authDec('public')
 @Arg()
-def GetScript(scriptID='', uID = None):
-    Log(uID, 'getScript', info = {
+def GetScript(scriptID='', uID=None):
+    Log(uID, 'getScript', info={
         'scriptID': scriptID
     })
     scriptContent = script.GetScriptByID(scriptID=scriptID)
