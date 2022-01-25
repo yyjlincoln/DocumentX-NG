@@ -1,3 +1,4 @@
+import json
 import mongoengine as me
 
 
@@ -6,11 +7,13 @@ class Token(me.EmbeddedDocument):
     expires = me.FloatField()
     token = me.StringField()
 
+
 class Policy(me.EmbeddedDocument):
     uID = me.StringField(default=None)
     group = me.StringField(default=None)
     read = me.BooleanField(default=True)
     write = me.BooleanField(default=False)
+
 
 class User(me.Document):
     name = me.StringField(required=True)
@@ -25,6 +28,7 @@ class User(me.Document):
     email = me.EmailField(required=True)
     activated = me.BooleanField(default=False)
     offlineaccess = me.BooleanField(default=False)
+
 
 class Document(me.Document):
     name = me.StringField(required=True)
@@ -69,6 +73,7 @@ class RemoteLoginRequest(me.Document):
     # 1 - Not auth / scan yet
     # 2 - Scanned, not auth
 
+
 class AccessLog(me.Document):
     uID = me.StringField()
     event = me.StringField()
@@ -80,13 +85,15 @@ class AccessLog(me.Document):
 class Exam(me.Document):
     examID = me.StringField(required=True, unique=True)
     name = me.StringField(required=True)
-    maxTimeAllowed = me.FloatField(required=True) # in seconds
-    maxAttemptsAllowed = me.IntField(required=True, default = 1)
+    maxTimeAllowed = me.FloatField(required=True)  # in seconds
+    maxAttemptsAllowed = me.IntField(required=True, default=1)
     createdBy = me.StringField(required=True)
     users = me.ListField(me.StringField(), default=[])
     created = me.FloatField(required=True)
     docID = me.StringField(default='')
-    resourcesAvailableAfterLastAttempt = me.ListField(me.StringField(), default=[])
+    resourcesAvailableAfterLastAttempt = me.ListField(
+        me.StringField(), default=[])
+
 
 class ExamAttempt(me.Document):
     attemptID = me.StringField(required=True, unique=True)
@@ -95,4 +102,10 @@ class ExamAttempt(me.Document):
     timeStarted = me.FloatField(required=True)
     completed = me.BooleanField(default=False)
     timeCompleted = me.FloatField()
-    docID = me.StringField() # Exam attempt file
+    docID = me.StringField()  # Exam attempt file
+
+
+with open("secrets.json", "r") as f:
+    secrets = json.load(f)
+    assert 'dbURL' in secrets
+    me.connect(host=secrets['dbURL'])

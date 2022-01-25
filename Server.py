@@ -22,15 +22,6 @@ from core import Log
 # Initialize app
 app = Flask(__name__)
 
-# Define a connection to the database
-db = MongoEngine()
-app.config['MONGODB_SETTINGS'] = {
-    "db": "documentx",
-    "host": "localhost",
-    "port": 27017
-}
-db.init_app(app)
-
 FRONTEND_ROOT = 'https://mcsrv.icu'
 
 ALLOWED_EXTENSIONS = ['txt', 'pdf', 'doc',
