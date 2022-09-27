@@ -105,6 +105,12 @@ class ExamAttempt(me.Document):
     docID = me.StringField()  # Exam attempt file
 
 
+class SendToApp(me.Document):
+    uID = me.StringField(required=True)
+    docID = me.StringField(required=True)
+    timeCreated = me.FloatField(required=True)
+
+
 with open("secrets.json", "r") as f:
     secrets = json.load(f)
     assert 'dbURL' in secrets

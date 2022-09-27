@@ -1185,6 +1185,27 @@ def logAppAbnormalExits(timeReported='0', event='{}', uID='', token='', appSigna
     return Res(0, 'Succeeded')
 
 
+@rmap.register_request('/sendToApp')
+@authlib.authDec("verify_token")
+@Arg()
+def sendToApp(uID, docID):
+    doc = core.GetDocByDocID(docID=docID)
+    if not doc:
+        return Res(-301, "Could not send to the app: Document does not exist.")
+    return core.NewSendToAppRequest(uID=uID, docID=docID)
+
+
+@rmap.register_request('/getSendToAppRequest')
+@authlib.authDec("verify_token")
+@Arg()
+def getSendToAppRequest(uID):
+    r = core.GetSendToAppRequests(uID=uID)
+    if r:
+        r = r.to_mongo()
+        r.pop('_id')
+    return Res(0, request=r)
+
+
 @app.route('/appdirect/<path:path>')
 def appDirect(path):
     return redirect("documentx://" + path, code=302)

@@ -1,7 +1,7 @@
 import re
 import os
 import unicodedata
-from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog, Exam, ExamAttempt, Policy
+from database import Document, me, User, Token, ResourceGroup, DocumentProperties, RemoteLoginRequest, AccessLog, Exam, ExamAttempt, Policy, SendToApp
 import time
 import random
 import hashlib
@@ -60,8 +60,9 @@ def secure_filename(filename):
     return filename
 
 
-def Log(uID=None, event=None, docID=None, info = {}):
-    r = AccessLog(uID=uID, event=event, docID=docID, time=time.time(), json=info)
+def Log(uID=None, event=None, docID=None, info={}):
+    r = AccessLog(uID=uID, event=event, docID=docID,
+                  time=time.time(), json=info)
     r.save()
     for log in AccessLog.objects(time__lte=time.time()-1209600):
         # Clear any log that's more than 14 days
@@ -170,6 +171,15 @@ def GetUserByID(uID):
         return u
     return None
 
+
+def GetSendToAppRequests(uID):
+    r = SendToApp.objects(uID__iexact=uID).first()
+    if r:
+        r.delete()
+        return r
+    return None
+
+
 def GetUserByEmail(uID):
     u = User.objects(email__iexact=uID).first()
     if u:
@@ -264,6 +274,37 @@ def RejectRemoteLogin(rID):
         return False
 
 
+def NewSendToAppRequest(uID, docID):
+    u = GetUserByID(uID)
+    if not u:
+        return {
+            "code": -404,
+            "message": "User not found"
+        }
+    d = GetDocByDocID(docID)
+    if not d:
+        return {
+            "code": -301,
+            "message": "Document not found"
+        }
+    for o in SendToApp.objects(uID__iexact=uID):
+        o.delete()
+
+    r = SendToApp(uID=uID, docID=docID, timeCreated=time.time())
+    try:
+        r.save()
+    except Exception as e:
+        return {
+            "code": -1,
+            "message": "Could not save the record: "+str(e)
+        }
+
+    return {
+        "code": 0,
+        "message": "Successfully saved."
+    }
+
+
 def GetUserToken(uID, tokenMaxAge=None):
     u = GetUserByID(uID)
     if u:
@@ -325,6 +366,7 @@ def NewUser(uID, name, password, email):
             'message': 'Failed to register.'
         }
 
+
 def GetDocuments(uID=None, archived=False, start=0, end=50):
     'archived: None - Return All Documents; True - Only return archived; False - Only not archived.'
 
@@ -345,7 +387,6 @@ def GetDocuments(uID=None, archived=False, start=0, end=50):
                 return Document.objects((Q(owner__iexact=uID) | Q(policies__uID__iexact=uID)) & Q(archived=archived)).order_by('-dScanned')[start:end]
 
     return []
-
 
 
 def GetUIColorScheme():
