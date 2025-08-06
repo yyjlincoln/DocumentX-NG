@@ -11,7 +11,7 @@ class Gateway():
         session = boto3.session.Session()
         self.client = session.client('s3',
                                      region_name='nyc3',
-                                     endpoint_url='https://nyc3.digitaloceanspaces.com',
+                                     endpoint_url='https://g.s4.mega.io',
                                      aws_access_key_id=key,
                                      aws_secret_access_key=secret)
 
